@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+server/node_modules/
+client/node_modules/
+
+# Build output
+client/dist/
+out/
+
+# Electron-forge output
+.webpack/
+
+# Environment — never commit this
+.env
+client/.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Electron build caches
+.vite/
