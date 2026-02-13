@@ -3,11 +3,11 @@
 <!-- HEADER STYLE: CLASSIC -->
 <div align="center">
 
-<img src="ArcJournal.png" width="30%" style="position: relative; top: 0; right: 0;" alt="Project Logo"/>
+<img src="assets/bluelogo.png" width="30%" style="position: relative; top: 0; right: 0;" alt="Project Logo"/>
 
 # ARCJOURNAL
 
-<em>Transform Reflection into Insight and Growth</em>
+<em>Transform Reflection Into Insight and Growth</em>
 
 <!-- BADGES -->
 <img src="https://img.shields.io/github/license/stinoooo/ArcJournal?style=flat&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
@@ -51,23 +51,22 @@
     - [Project Index](#project-index)
 - [Roadmap](#roadmap)
 - [License](#license)
-- [Acknowledgment](#acknowledgment)
 
 ---
 
 ## Overview
 
-ArcJournal is a comprehensive, full-stack journaling application designed to help users reflect, track emotions, and gain insights through AI-generated summaries and rich content features. Built with Electron, React, Express, and MongoDB, it offers a seamless experience from data entry to visualization.
+ArcJournal is a comprehensive platform that transforms personal reflections into meaningful insights through rich text editing, emotion tagging, and AI-powered summaries. Built with a modular architecture, it supports deployment across web, desktop, and mobile environments, making it a versatile tool for developers creating personalized journaling applications.
 
 **Why ArcJournal?**
 
-This project enables developers to build secure, scalable journaling and analytics tools with integrated AI summaries. The core features include:
+This project aims to streamline the development of reflective, data-driven journaling apps. The core features include:
 
-- 🎯 **🧠 AI Weekly Summaries:** Generate insightful reflections on user entries using OpenAI's GPT-4.
-- 📝 **🎨 Rich Text Editor:** Empower users to create detailed, formatted journal entries with advanced editing capabilities.
-- 🔒 **🔑 Secure Authentication:** Manage user profiles, sessions, and data privacy effortlessly.
-- 📊 **📈 Data Visualization:** Present emotional trends and engagement metrics through intuitive dashboards.
-- 🚀 **⚙️ Automated Deployment:** Simplify hosting on Railway with in-app updates via GitHub Releases.
+- 🧠 **AI Insights:** Weekly summaries and emotional analysis powered by OpenAI GPT-4.
+- ✍️ **Rich Content:** Advanced text editing with support for media, comments, and annotations.
+- 🔒 **Secure User Management:** Authentication, profile handling, and data privacy built-in.
+- 🖥️ **Cross-Platform Support:** Electron-based desktop app with seamless deployment options.
+- 🚀 **Scalable Architecture:** Modular backend and frontend components designed for growth and customization.
 
 ---
 
@@ -75,15 +74,15 @@ This project enables developers to build secure, scalable journaling and analyti
 
 |      | Component       | Details                                                                                     |
 | :--- | :-------------- | :------------------------------------------------------------------------------------------ |
-| ⚙️  | **Architecture**  | <ul><li>Electron-based desktop app with React frontend</li><li>Node.js backend server</li><li>Modular structure separating client and server codebases</li></ul> |
-| 🔩 | **Code Quality**  | <ul><li>Uses ESLint for linting</li><li>Consistent code style with Prettier</li><li>TypeScript types are not explicitly used, relies on JavaScript</li></ul> |
-| 📄 | **Documentation** | <ul><li>Basic README with project overview</li><li>In-code comments present but minimal</li><li>No dedicated API or developer docs</li></ul> |
-| 🔌 | **Integrations**  | <ul><li>Electron for desktop packaging</li><li>React and React Router for UI routing</li><li>MongoDB via Mongoose for data storage</li><li>JWT for authentication</li><li>Electron-updater for auto-updates</li><li>Vite as build tool for React</li></ul> |
-| 🧩 | **Modularity**    | <ul><li>Client and server code separated in different directories</li><li>Uses npm scripts for build and start commands</li><li>Component-based React architecture</li></ul> |
-| 🧪 | **Testing**       | <ul><li>No explicit testing framework detected in codebase</li><li>Potential for future Jest or Cypress integration</li></ul> |
-| ⚡️  | **Performance**   | <ul><li>Vite provides fast hot module replacement</li><li>Electron's native modules optimize desktop performance</li></ul> |
-| 🛡️ | **Security**      | <ul><li>Uses bcryptjs for password hashing</li><li>JWT tokens for auth, stored securely</li><li>Basic CORS setup in server</li></ul> |
-| 📦 | **Dependencies**  | <ul><li>Heavy reliance on Electron, React, and Node.js packages</li><li>Includes numerous Tiptap extensions for rich text editing</li><li>Build tools like @electron-forge and electron-updater</li></ul> |
+| ⚙️  | **Architecture**  | <ul><li>Electron-based desktop app with React frontend</li><li>Node.js backend with Express</li><li>Separation of client and server directories</li><li>Uses Vite for frontend build</li></ul> |
+| 🔩 | **Code Quality**  | <ul><li>Consistent use of modern JavaScript/TypeScript syntax</li><li>Modular components with React hooks</li><li>Linting likely enforced via npm scripts</li></ul> |
+| 📄 | **Documentation** | <ul><li>Basic README with project overview</li><li>Includes setup instructions and dependencies</li><li>Code comments present in key modules</li></ul> |
+| 🔌 | **Integrations**  | <ul><li>Electron for desktop packaging</li><li>Electron-updater for auto-updates</li><li>React Router for navigation</li><li>Axios for HTTP requests</li><li>MongoDB via Mongoose for data storage</li></ul> |
+| 🧩 | **Modularity**    | <ul><li>Separate client and server codebases</li><li>Reusable React components and hooks</li><li>Configurable via JSON files (e.g., railway.json)</li></ul> |
+| 🧪 | **Testing**       | <ul><li>Testing framework not explicitly specified; likely uses Jest or similar</li><li>Potential unit tests for React components and backend APIs</li></ul> |
+| ⚡️  | **Performance**   | <ul><li>Uses Vite for fast frontend builds</li><li>Electron's auto-updater optimizes update process</li><li>Code splitting and lazy loading implied via React and Vite</li></ul> |
+| 🛡️ | **Security**      | <ul><li>Uses bcryptjs for password hashing</li><li>jsonwebtoken for auth tokens</li><li>Express-validator for input validation</li></ul> |
+| 📦 | **Dependencies**  | <ul><li>React, Electron, Node.js, Mongoose, Axios, bcryptjs, jsonwebtoken</li><li>Build tools: Vite, Electron Forge, cross-env</li><li>UI extensions: Tiptap extensions for rich text editing</li></ul> |
 
 ---
 
@@ -92,6 +91,7 @@ This project enables developers to build secure, scalable journaling and analyti
 ```sh
 └── ArcJournal/
     ├── DEPLOYMENT.md
+    ├── LICENSE
     ├── Procfile
     ├── README.md
     ├── client
@@ -138,27 +138,31 @@ This project enables developers to build secure, scalable journaling and analyti
 				</tr>
 			</thead>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/README.md'>README.md</a></b></td>
-					<td style='padding: 8px;'>- Provides core functionality for managing user authentication, journal entries, and weekly AI-generated summaries within the ArcJournal desktop app<br>- Integrates backend API endpoints with frontend components to enable secure, seamless journaling, search, and data visualization features, supporting the overall architecture of a full-stack Electron, React, Express, and MongoDB environment.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/LICENSE'>LICENSE</a></b></td>
+					<td style='padding: 8px;'>- Provides the core licensing information that governs the entire project, establishing legal permissions and restrictions for software use, distribution, and modification within the overall architecture<br>- Ensures clarity on licensing terms, supporting open-source collaboration and safeguarding intellectual property across the codebase.</td>
 				</tr>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/DEPLOYMENT.md'>DEPLOYMENT.md</a></b></td>
-					<td style='padding: 8px;'>- Provides comprehensive deployment and update procedures for ArcJournal, enabling hosting on Railway with MongoDB integration and automating in-app updates via GitHub Releases<br>- Facilitates seamless code deployment, environment configuration, and user update delivery, ensuring reliable backend operation and streamlined distribution for end-users.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/README.md'>README.md</a></b></td>
+					<td style='padding: 8px;'>- The core code file in this project serves as the foundational component that orchestrates the applications primary functionality—transforming user reflections into meaningful insights and fostering personal growth<br>- It manages the flow of data, handles user interactions, and integrates various tools and technologies to deliver a seamless journaling experience<br>- Overall, this code is essential for enabling users to record, analyze, and derive value from their reflections within the ARCJOURNAL platform, supporting the projects goal of turning reflection into insight and growth.</td>
 				</tr>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/railway.json'>railway.json</a></b></td>
-					<td style='padding: 8px;'>- Defines the deployment configuration for the project, specifying build and runtime instructions within the Railway platform<br>- It ensures the server is correctly built using NIXPACKS, installs dependencies, and manages server startup with automatic retries on failure<br>- This setup facilitates reliable deployment and operation of the backend service within the overall architecture.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/DEPLOYMENT.md'>DEPLOYMENT.md</a></b></td>
+					<td style='padding: 8px;'>- Provides comprehensive deployment and update procedures for ArcJournal, enabling hosting on Railway with MongoDB integration and automating in-app updates via GitHub Releases<br>- Facilitates seamless server deployment, environment configuration, and user update delivery, ensuring reliable backend operation and streamlined release management for end-users.</td>
 				</tr>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/package.json'>package.json</a></b></td>
-					<td style='padding: 8px;'>- Defines project metadata, dependencies, and build scripts for ArcJournal, an Electron-based personal journaling application within the ArcNode Network<br>- Facilitates development, packaging, and publishing workflows, ensuring seamless integration of server, client, and Electron components<br>- Serves as the central configuration point that orchestrates the applications lifecycle and distribution across multiple platforms.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/railway.json'>railway.json</a></b></td>
+					<td style='padding: 8px;'>- Defines deployment and build configurations for the project, orchestrating the setup of the server environment using NIXPACKS<br>- Ensures automated installation of dependencies and manages server startup with restart policies, facilitating reliable deployment within the Railway platform<br>- This configuration integrates the server component into the overall architecture, supporting seamless deployment and operational stability.</td>
 				</tr>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/setup.sh'>setup.sh</a></b></td>
-					<td style='padding: 8px;'>- Facilitates initial project setup by automating environment validation, dependency installation, and asset configuration for ArcJournal<br>- Ensures necessary environment variables and assets are in place, streamlining onboarding and preparation for development or deployment<br>- This script integrates core components of the architecture, aligning server, client, and assets to support a seamless development experience.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/package.json'>package.json</a></b></td>
+					<td style='padding: 8px;'>- Defines project metadata, dependencies, and build scripts for ArcJournal, an Electron-based personal journaling application within the ArcNode Network<br>- Facilitates development, packaging, and publishing workflows, ensuring seamless integration of server, client, and Electron components<br>- Serves as the central configuration point that orchestrates the apps lifecycle, build processes, and distribution across platforms.</td>
 				</tr>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/Procfile'>Procfile</a></b></td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/setup.sh'>setup.sh</a></b></td>
+					<td style='padding: 8px;'>- Facilitates initial project setup by automating dependency installation, environment configuration, and asset placement for ArcJournal<br>- Ensures all necessary components are prepared for development or deployment, streamlining onboarding and maintaining consistency across environments within the overall architecture<br>- This script supports the seamless integration of backend, frontend, and assets, enabling efficient project initialization.</td>
+				</tr>
+				<tr style='border-bottom: 1px solid #eee;'>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/Procfile'>Procfile</a></b></td>
 					<td style='padding: 8px;'>- Defines the command to launch the web server by navigating to the server directory and executing the Node.js application<br>- It orchestrates the startup process within the deployment environment, ensuring the backend service is initiated correctly as part of the overall architecture<br>- This setup facilitates seamless deployment and operation of the web application.</td>
 				</tr>
 			</table>
@@ -178,12 +182,12 @@ This project enables developers to build secure, scalable journaling and analyti
 				</tr>
 			</thead>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/package.json'>package.json</a></b></td>
-					<td style='padding: 8px;'>- Defines the core API server for ArcJournal, facilitating user authentication, data management, and secure communication<br>- It orchestrates the backend services, manages dependencies, and provides the entry point for running the application, ensuring seamless interaction between clients and the database<br>- This setup forms the backbone of the applications architecture, enabling scalable and secure journal management functionalities.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/package.json'>package.json</a></b></td>
+					<td style='padding: 8px;'>- Defines the core API server for ArcJournal, enabling user authentication, data management, and secure communication<br>- It orchestrates request handling, integrates essential middleware, and connects to the database, forming the backbone of the applications backend architecture to support journal-related functionalities and ensure reliable, scalable service delivery.</td>
 				</tr>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/index.js'>index.js</a></b></td>
-					<td style='padding: 8px;'>- Establishes the core server infrastructure for the ArcJournal API, managing HTTP request routing, middleware configuration, and database connectivity<br>- Facilitates communication between clients and backend services, handles user authentication, journal entries, and statistics, while ensuring server health and stability<br>- Serves as the central orchestrator that enables seamless interaction and data persistence within the applications architecture.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/index.js'>index.js</a></b></td>
+					<td style='padding: 8px;'>- Establishes the core backend server for ArcJournal, managing API endpoints for authentication, entries, user data, wraps, and statistics<br>- Connects to MongoDB, handles middleware configurations, and ensures server stability<br>- Facilitates communication between client applications and the database, supporting data storage, retrieval, and health monitoring within the overall architecture.</td>
 				</tr>
 			</table>
 			<!-- middleware Submodule -->
@@ -200,8 +204,8 @@ This project enables developers to build secure, scalable journaling and analyti
 						</tr>
 					</thead>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/middleware/auth.js'>auth.js</a></b></td>
-							<td style='padding: 8px;'>- Implements authentication middleware to verify user identity via JSON Web Tokens, ensuring secure access control across the application<br>- It validates tokens, retrieves associated user data, and attaches it to requests, facilitating authorized interactions within the server architecture<br>- This component is essential for maintaining secure, user-specific operations throughout the codebase.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/middleware/auth.js'>auth.js</a></b></td>
+							<td style='padding: 8px;'>- Implements authentication middleware to verify user identity through JWT tokens, ensuring secure access control across the application<br>- It validates tokens, retrieves associated user data, and attaches user information to requests, facilitating protected route access and maintaining overall security within the server architecture.</td>
 						</tr>
 					</table>
 				</blockquote>
@@ -220,12 +224,12 @@ This project enables developers to build secure, scalable journaling and analyti
 						</tr>
 					</thead>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/helpers/openai.js'>openai.js</a></b></td>
-							<td style='padding: 8px;'>- Facilitates the generation of weekly journal summaries by analyzing individual entries and producing structured JSON reports<br>- Integrates with OpenAIs GPT-4 to synthesize insights on emotional trends, highlights, and overall weekly reflections, supporting the applications goal of providing users with meaningful, automated summaries of their journaling activity within the broader system architecture.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/helpers/openai.js'>openai.js</a></b></td>
+							<td style='padding: 8px;'>- Facilitates automated weekly summaries of journal entries by leveraging OpenAIs GPT-4 model<br>- It analyzes user reflections, grades, and emotions to generate structured JSON reports highlighting weekly trends, key highlights, and emotional insights<br>- This component integrates AI-driven insights into the overall architecture, supporting personalized journaling feedback and progress tracking within the application.</td>
 						</tr>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/helpers/gemini.js'>gemini.js</a></b></td>
-							<td style='padding: 8px;'>- Generates weekly summaries for ArcJournal by synthesizing user journal entries into a JSON report<br>- It captures key themes, emotional trends, highlights, and overall mood, providing a warm, concise overview of the week<br>- This functionality supports the applications goal of delivering personalized, insightful reflections to users, enhancing their journaling experience through automated, meaningful summaries.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/helpers/gemini.js'>gemini.js</a></b></td>
+							<td style='padding: 8px;'>- Generates weekly summaries for ArcJournal by synthesizing user journal entries into a concise JSON report<br>- It captures key themes, emotional trends, highlights, and overall mood, supporting users reflection and insights<br>- This component integrates AI-driven natural language processing to produce warm, structured summaries aligned with the applications focus on emotional awareness and personal growth.</td>
 						</tr>
 					</table>
 				</blockquote>
@@ -244,16 +248,16 @@ This project enables developers to build secure, scalable journaling and analyti
 						</tr>
 					</thead>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/models/User.js'>User.js</a></b></td>
-							<td style='padding: 8px;'>- Defines the user data model within the applications architecture, encapsulating user profile information, authentication credentials, and onboarding status<br>- Facilitates secure password handling through hashing and provides mechanisms for password verification and sensitive data exclusion during serialization, supporting user management, authentication, and onboarding workflows across the system.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/models/User.js'>User.js</a></b></td>
+							<td style='padding: 8px;'>- Defines the user data model within the applications architecture, encapsulating user identity, onboarding information, and security measures<br>- Facilitates user account management, including registration, authentication, and profile updates, while ensuring data integrity and privacy through schema validation and password hashing<br>- Serves as a foundational component for user-related functionalities across the system.</td>
 						</tr>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/models/Wrap.js'>Wrap.js</a></b></td>
-							<td style='padding: 8px;'>- Defines the data structure for weekly user reflections, capturing mood, grades, and activity insights<br>- Facilitates aggregation and analysis of user emotional trends, progress, and engagement over time within the broader application architecture<br>- Serves as a core component for tracking individual user journeys and generating personalized feedback.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/models/Wrap.js'>Wrap.js</a></b></td>
+							<td style='padding: 8px;'>- Defines the data structure for weekly user reflections, capturing mood, grades, and journaling activity<br>- Serves as a core component for aggregating and analyzing user emotional trends, progress, and engagement over time within the applications architecture<br>- Facilitates efficient storage and retrieval of personalized weekly summaries to support insights and user feedback.</td>
 						</tr>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/models/Entry.js'>Entry.js</a></b></td>
-							<td style='padding: 8px;'>- Defines the data schema for journal entries within the application, capturing user-specific daily logs with rich content, comments, attachments, and version history<br>- Facilitates structured storage and retrieval of user entries, supporting features like editing, multimedia attachments, and comment threads, integral to the overall journaling and data management architecture.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/models/Entry.js'>Entry.js</a></b></td>
+							<td style='padding: 8px;'>- Defines the data schema for journal entries within the application, capturing user-specific daily logs with rich content, comments, attachments, and version history<br>- Serves as the core data model for storing and retrieving user entries, enabling features like editing, commenting, and multimedia support, thereby facilitating a comprehensive journaling experience aligned with user activity and customization.</td>
 						</tr>
 					</table>
 				</blockquote>
@@ -272,24 +276,24 @@ This project enables developers to build secure, scalable journaling and analyti
 						</tr>
 					</thead>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/routes/entries.js'>entries.js</a></b></td>
-							<td style='padding: 8px;'>- Defines RESTful API endpoints for managing user journal entries, enabling creation, retrieval, updating, and deletion<br>- Supports filtering by date ranges and search terms, while maintaining version history for content edits<br>- Integrates authentication to ensure secure access, forming a core component of the applications data handling and user interaction architecture.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/routes/entries.js'>entries.js</a></b></td>
+							<td style='padding: 8px;'>- Defines RESTful API endpoints for managing user journal entries, enabling creation, retrieval, updating, and deletion of entries<br>- Supports filtering by date ranges and search terms, maintains version history for content edits, and enforces user authentication<br>- Integrates seamlessly into the broader application architecture to facilitate personalized, date-organized journaling functionality.</td>
 						</tr>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/routes/user.js'>user.js</a></b></td>
-							<td style='padding: 8px;'>- Defines user-related API endpoints for profile management, onboarding completion, and account deletion within the application<br>- Facilitates updating user information, retrieving profile data, and securely deleting user accounts along with associated data, supporting seamless user lifecycle operations and ensuring data integrity across the system.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/routes/user.js'>user.js</a></b></td>
+							<td style='padding: 8px;'>- Defines user-related API endpoints for profile management, onboarding completion, and account deletion within the application<br>- Facilitates updating user information, retrieving user profiles, and securely deleting user data and associated entries, ensuring seamless user lifecycle handling and data integrity across the platform.</td>
 						</tr>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/routes/auth.js'>auth.js</a></b></td>
-							<td style='padding: 8px;'>- Defines authentication routes for user registration, login, and profile retrieval within the server architecture<br>- Facilitates secure user onboarding, credential validation, and session management through JWT tokens, integrating seamlessly with user data models and middleware to support authentication workflows across the application.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/routes/auth.js'>auth.js</a></b></td>
+							<td style='padding: 8px;'>- Defines authentication routes for user registration, login, and profile retrieval within the server architecture<br>- Facilitates secure user onboarding and session management through token-based authentication, enabling seamless access control across the application<br>- Integrates validation, error handling, and middleware to ensure robust security and user data integrity.</td>
 						</tr>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/routes/wraps.js'>wraps.js</a></b></td>
-							<td style='padding: 8px;'>- Provides API endpoints to generate, retrieve, and manage weekly summaries of user journal entries<br>- It calculates key metrics such as average grades, mood trends, top emojis, and day-specific insights, enabling users to review their weekly progress and emotional patterns without relying on AI<br>- Integrates seamlessly into the broader application architecture for personalized reflection and tracking.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/routes/wraps.js'>wraps.js</a></b></td>
+							<td style='padding: 8px;'>- Provides API endpoints to generate, retrieve, and manage weekly summaries of user journal entries<br>- It calculates key metrics such as average grades, mood trends, top emojis, and day-specific insights, enabling users to review their weekly progress and patterns without relying on AI<br>- Integrates seamlessly into the broader application architecture for personalized reflection and tracking.</td>
 						</tr>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/server/routes/stats.js'>stats.js</a></b></td>
-							<td style='padding: 8px;'>- Provides comprehensive statistical analysis of user journal entries within specified date ranges, including word counts, mood trends, streaks, activity patterns, and engagement metrics<br>- Serves as a core component for generating insights and visualizations, supporting features like progress tracking, mood analysis, and user engagement summaries within the overall application architecture.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/server/routes/stats.js'>stats.js</a></b></td>
+							<td style='padding: 8px;'>- Provides comprehensive statistical analysis of user journal entries within specified date ranges, including word counts, mood trends, activity patterns, streaks, and engagement metrics<br>- Facilitates insights into user behavior, content quality, and overall engagement, supporting data-driven enhancements to the journaling platforms features and user experience.</td>
 						</tr>
 					</table>
 				</blockquote>
@@ -310,12 +314,12 @@ This project enables developers to build secure, scalable journaling and analyti
 				</tr>
 			</thead>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/electron/main.js'>main.js</a></b></td>
-					<td style='padding: 8px;'>- Manages the main process of an Electron application, orchestrating window creation, auto-updates, secure token storage, and application lifecycle events<br>- Facilitates communication between the renderer process and system-level functionalities, ensuring seamless user experience, security, and update handling within the overall architecture.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/electron/main.js'>main.js</a></b></td>
+					<td style='padding: 8px;'>- Manages the main process of an Electron application by initializing the primary window, handling auto-updates, secure token storage, and window controls<br>- Facilitates communication between the renderer and main processes through IPC, ensuring smooth app lifecycle management, secure data handling, and update workflows within the overall architecture.</td>
 				</tr>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/electron/preload.js'>preload.js</a></b></td>
-					<td style='padding: 8px;'>- Facilitates secure communication between the Electron renderer process and main process by exposing APIs for token management, window controls, application information, and auto-updater functionalities<br>- Acts as a bridge to enable the renderer to invoke main process actions and listen for update events, ensuring a seamless and secure user experience within the applications architecture.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/electron/preload.js'>preload.js</a></b></td>
+					<td style='padding: 8px;'>- Facilitates secure communication between the Electron renderer process and main process by exposing APIs for token management, window controls, application information, and auto-updater functionalities<br>- Enables the renderer to invoke main process actions and listen for update events, ensuring seamless user interactions and application maintenance within the overall architecture.</td>
 				</tr>
 			</table>
 		</blockquote>
@@ -334,16 +338,16 @@ This project enables developers to build secure, scalable journaling and analyti
 				</tr>
 			</thead>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/package.json'>package.json</a></b></td>
-					<td style='padding: 8px;'>- Defines the client-side configuration and dependencies for the ArcJournal web application, enabling a rich, interactive user interface built with React and Tiptap for advanced text editing<br>- It orchestrates development, build, and preview workflows, ensuring a seamless experience for users to create, edit, and view journal entries within the overall architecture.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/package.json'>package.json</a></b></td>
+					<td style='padding: 8px;'>- Defines the client-side configuration and dependencies for the ArcJournal application, enabling a rich, interactive editing experience with React and Tiptap<br>- It orchestrates development, build, and preview workflows, supporting seamless content creation and management within the overall architecture<br>- This setup ensures a responsive, feature-rich user interface aligned with the projects journaling and content editing objectives.</td>
 				</tr>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/vite.config.js'>vite.config.js</a></b></td>
-					<td style='padding: 8px;'>- Configures the development and build environment for the client-side application, leveraging Vite to optimize React development workflows<br>- Establishes project structure, server settings, build output, and module resolution aliases, ensuring a streamlined and efficient setup that integrates seamlessly with the overall architecture<br>- This setup facilitates rapid development and consistent deployment of the front-end interface.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/vite.config.js'>vite.config.js</a></b></td>
+					<td style='padding: 8px;'>- Configures the development and build environment for the client-side application, ensuring seamless integration of React components with Vite<br>- It establishes project paths, server settings, and build output, facilitating efficient development workflows and optimized production deployment within the overall architecture<br>- This setup supports a smooth, modern front-end experience aligned with the projects modular structure.</td>
 				</tr>
 				<tr style='border-bottom: 1px solid #eee;'>
-					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/index.html'>index.html</a></b></td>
-					<td style='padding: 8px;'>- Serves as the entry point for the client-side application, establishing the foundational HTML structure and loading the main React component<br>- It initializes the user interface for ArcJournal, enabling dynamic content rendering and interaction within the web browser<br>- This file integrates essential fonts and development tools, supporting a seamless user experience and development workflow.</td>
+					<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/index.html'>index.html</a></b></td>
+					<td style='padding: 8px;'>- Serves as the entry point for the client-side application, initializing the user interface within the root DOM element<br>- It loads the main React component, facilitating the rendering of the applications core features and layout<br>- This file integrates essential styles and development tools, enabling a seamless user experience and supporting development workflows within the overall architecture.</td>
 				</tr>
 			</table>
 			<!-- src Submodule -->
@@ -360,12 +364,12 @@ This project enables developers to build secure, scalable journaling and analyti
 						</tr>
 					</thead>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/main.jsx'>main.jsx</a></b></td>
-							<td style='padding: 8px;'>- Initialize the React application by rendering the main App component into the DOM, establishing the entry point for the client-side user interface<br>- It sets up the foundational rendering process within the project architecture, ensuring that the React component tree is mounted correctly and the application is ready for user interaction.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/main.jsx'>main.jsx</a></b></td>
+							<td style='padding: 8px;'>- Sets up the React applications entry point by rendering the main App component into the DOM<br>- It initializes the client-side interface, ensuring the entire user interface is mounted within the root element<br>- This foundational code facilitates the startup of the applications user experience, integrating global styles and enabling React's strict mode for enhanced development checks.</td>
 						</tr>
 						<tr style='border-bottom: 1px solid #eee;'>
-							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/App.jsx'>App.jsx</a></b></td>
-							<td style='padding: 8px;'>- Defines the client-side routing architecture, managing user authentication flow, onboarding process, and access to core application features<br>- Implements layout components that conditionally render navigation elements based on user state, ensuring seamless navigation and access control across the apps different sections<br>- Serves as the central navigation hub, orchestrating user experience and route protection within the overall application structure.</td>
+							<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/App.jsx'>App.jsx</a></b></td>
+							<td style='padding: 8px;'>- Defines the client-side routing architecture for the application, managing navigation flows based on user authentication and onboarding status<br>- Implements layout components that conditionally render pages such as sign-in, onboarding, and main app sections, ensuring users are directed appropriately and the interface adapts to their current state within the overall user journey.</td>
 						</tr>
 					</table>
 					<!-- context Submodule -->
@@ -382,11 +386,11 @@ This project enables developers to build secure, scalable journaling and analyti
 								</tr>
 							</thead>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/context/ToastContext.jsx'>ToastContext.jsx</a></b></td>
-									<td style='padding: 8px;'>- Provides a centralized mechanism for managing and displaying toast notifications across the application<br>- Facilitates user feedback by showing transient success, error, or informational messages, enhancing user experience and communication within the overall architecture<br>- Integrates seamlessly with the React component hierarchy to ensure consistent, styled, and dismissible alerts.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/context/ToastContext.jsx'>ToastContext.jsx</a></b></td>
+									<td style='padding: 8px;'>- Provides a centralized mechanism for managing and displaying toast notifications across the application<br>- Facilitates user feedback by showing transient success, error, or informational messages, enhancing user experience and communication within the overall architecture<br>- Integrates seamlessly with the React component tree, ensuring consistent and accessible notifications throughout the interface.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/context/AuthContext.jsx'>AuthContext.jsx</a></b></td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/context/AuthContext.jsx'>AuthContext.jsx</a></b></td>
 									<td style='padding: 8px;'>- Provides user authentication management within the application by handling login, signup, logout, and user data retrieval<br>- It maintains authentication state, manages tokens, and exposes authentication functions through context, enabling seamless access to user information and auth actions across the app<br>- This component is central to maintaining secure, persistent user sessions within the overall architecture.</td>
 								</tr>
 							</table>
@@ -406,8 +410,8 @@ This project enables developers to build secure, scalable journaling and analyti
 								</tr>
 							</thead>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/utils/birthday.js'>birthday.js</a></b></td>
-									<td style='padding: 8px;'>- Provides utility functions for handling user birthdays, including date comparisons, formatting, and age calculations, to support personalized user experiences<br>- Also offers time-based greetings and display name retrieval, enhancing user engagement and interface customization within the broader application architecture.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/utils/birthday.js'>birthday.js</a></b></td>
+									<td style='padding: 8px;'>- Provides utility functions for handling user birthdays, including date comparisons, formatting, and age calculations, to support personalized user experiences<br>- Also offers time-based greetings and display name retrieval, enhancing user engagement and interface responsiveness within the applications architecture.</td>
 								</tr>
 							</table>
 						</blockquote>
@@ -426,8 +430,8 @@ This project enables developers to build secure, scalable journaling and analyti
 								</tr>
 							</thead>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/api/index.js'>index.js</a></b></td>
-									<td style='padding: 8px;'>- Provides a centralized API client for interacting with backend services, managing authentication, user profiles, entries, wraps, and statistics<br>- Facilitates secure, streamlined communication between the client application and server, handling token management and request configuration to support core functionalities like user onboarding, data entry management, and analytics within the overall architecture.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/api/index.js'>index.js</a></b></td>
+									<td style='padding: 8px;'>- Provides a centralized API client for interacting with backend services, managing authentication, user profiles, entries, wraps, and statistics<br>- Facilitates secure, streamlined communication between the client application and server, handling token management and request configuration to support core functionalities such as user authentication, data entry management, and analytics within the overall architecture.</td>
 								</tr>
 							</table>
 						</blockquote>
@@ -446,32 +450,32 @@ This project enables developers to build secure, scalable journaling and analyti
 								</tr>
 							</thead>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/pages/Settings.jsx'>Settings.jsx</a></b></td>
-									<td style='padding: 8px;'>- Provides a user interface for managing personal profile settings, account deletion, and data management within the application<br>- Facilitates profile updates, age calculation, and critical account actions through modals, ensuring users can customize their experience and securely delete data or their account, aligning with the overall architectures focus on user-centric account control and data privacy.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/pages/Settings.jsx'>Settings.jsx</a></b></td>
+									<td style='padding: 8px;'>- Provides a user interface for managing personal profile settings, account deletion, and data management within the application<br>- Facilitates profile updates, age calculation, and critical account actions like deleting entries or the entire account, ensuring user control over personal data<br>- Integrates with backend APIs and context providers to maintain synchronization and user feedback across the platform.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/pages/SignIn.jsx'>SignIn.jsx</a></b></td>
-									<td style='padding: 8px;'>- Facilitates user authentication by providing a sign-in interface that captures credentials, manages login flow, and handles errors within the applications architecture<br>- Integrates with authentication and toast notification contexts to deliver a seamless user experience, enabling secure access to protected areas of the platform and supporting the overall user onboarding process.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/pages/SignIn.jsx'>SignIn.jsx</a></b></td>
+									<td style='padding: 8px;'>- Facilitates user authentication by providing a sign-in interface that captures credentials, manages login flow, and handles errors<br>- Integrates with authentication and toast notification contexts to deliver a seamless login experience within the applications architecture, enabling secure access to protected areas and enhancing user engagement.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/pages/Dashboard.jsx'>Dashboard.jsx</a></b></td>
-									<td style='padding: 8px;'>- Provides an interactive dashboard for daily journaling, enabling users to record reflections, assign day grades, and select emojis to express their mood<br>- Incorporates birthday-specific prompts and displays relevant greetings, fostering personalized engagement<br>- Facilitates seamless entry creation and management within the broader journaling and user profile architecture, enhancing user experience through contextual prompts and celebratory features.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/pages/Dashboard.jsx'>Dashboard.jsx</a></b></td>
+									<td style='padding: 8px;'>- Provides an interactive dashboard for daily journaling, enabling users to record reflections, assign day grades, and select emojis to express their mood<br>- Incorporates birthday-specific prompts and displays relevant greetings, fostering personalized engagement<br>- Integrates with backend APIs to fetch and save entries, supporting a seamless user experience within the broader journaling and self-reflection architecture.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/pages/SignUp.jsx'>SignUp.jsx</a></b></td>
-									<td style='padding: 8px;'>- Facilitates user account creation within the ArcJournal platform by providing a registration interface<br>- It manages form input, validates data, and interacts with authentication services to register new users<br>- Enhances user onboarding and ensures seamless account setup, integrating visual feedback and navigation to support a smooth sign-up experience in the overall application architecture.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/pages/SignUp.jsx'>SignUp.jsx</a></b></td>
+									<td style='padding: 8px;'>- Facilitates user account creation within the ArcJournal platform by providing a registration interface<br>- Handles input validation, communicates with authentication services, and offers real-time feedback to guide new users through the sign-up process<br>- Integrates seamlessly into the overall architecture to enable onboarding and user management for the ArcNode Network.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/pages/Onboarding.jsx'>Onboarding.jsx</a></b></td>
-									<td style='padding: 8px;'>- Facilitates user onboarding by guiding new users through personalized profile setup, including name, birth date, gender, and journaling goals<br>- Supports a multi-step process to enhance user engagement and tailor the journaling experience, ultimately integrating user preferences into the platforms architecture for a customized and welcoming entry point into the application.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/pages/Onboarding.jsx'>Onboarding.jsx</a></b></td>
+									<td style='padding: 8px;'>- Facilitates user onboarding by guiding new users through personalized setup steps, including profile details and journaling goals<br>- Ensures seamless data collection, validation, and submission to enhance user experience and tailor content, ultimately integrating users into the broader application architecture focused on personalized journaling and user engagement.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/pages/Journal.jsx'>Journal.jsx</a></b></td>
-									<td style='padding: 8px;'>- Journal.jsxThis component serves as the primary interface for users to view, create, and manage their journal entries within the application<br>- It provides a calendar-based view of entries, enabling users to navigate through different months and select specific dates to review or add reflections<br>- Additionally, it integrates features such as emotion tagging, rich text editing, and comment management, fostering a comprehensive journaling experience<br>- Overall, Journal.jsx acts as the central hub for user self-reflection, emotional tracking, and interaction within the applications architecture.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/pages/Journal.jsx'>Journal.jsx</a></b></td>
+									<td style='padding: 8px;'>- Journal.jsxThis component serves as the central interface for users to view, create, and manage their journal entries within the application<br>- It provides a calendar-based view that allows users to navigate through different months, select specific dates, and access or add entries associated with those dates<br>- Additionally, it integrates features such as emotion tagging, rich text editing, and comments, fostering a comprehensive journaling experience<br>- Overall, Journal.jsx acts as the primary hub for user reflection and record-keeping, seamlessly connecting date navigation, content management, and interactive feedback within the applications architecture.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/pages/ArcWrapped.jsx'>ArcWrapped.jsx</a></b></td>
-									<td style='padding: 8px;'>- The <code>ArcWrapped.jsx</code> file serves as a key component within the client-side architecture, responsible for presenting a comprehensive overview of user emotional and engagement metrics over customizable timeframes<br>- It fetches statistical data from the API, processes it, and displays it through an intuitive interface featuring dynamic visual cues such as color-coded grades and emojis<br>- This component enables users to analyze their emotional trends and activity patterns, thereby supporting the applications goal of fostering self-awareness and mental well-being<br>- Overall, it acts as an interactive dashboard that consolidates and visualizes user-centric insights within the broader analytics and user engagement architecture.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/pages/ArcWrapped.jsx'>ArcWrapped.jsx</a></b></td>
+									<td style='padding: 8px;'>- The <code>ArcWrapped.jsx</code> file serves as a key component within the client-side architecture, responsible for presenting a comprehensive overview of user emotional and engagement metrics over customizable timeframes<br>- It fetches statistical data from the API, processes it, and displays it through an intuitive interface featuring dynamic visual cues such as color-coded grades and emoji representations<br>- This component enables users to analyze their emotional patterns and activity trends, thereby supporting the applications goal of fostering self-awareness and mental well-being<br>- Overall, it acts as an interactive dashboard that visualizes user insights, integrating seamlessly into the broader architecture focused on personalized data-driven experiences.</td>
 								</tr>
 							</table>
 						</blockquote>
@@ -490,32 +494,32 @@ This project enables developers to build secure, scalable journaling and analyti
 								</tr>
 							</thead>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/components/EmojiPicker.jsx'>EmojiPicker.jsx</a></b></td>
-									<td style='padding: 8px;'>- Provides an interactive emoji-based emotion selector integrated into the user interface, enabling users to express their current feelings visually<br>- It enhances user engagement by offering a visually appealing, intuitive way to capture emotional states, supporting the broader applications goal of fostering emotional awareness and personalized interactions within the overall architecture.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/components/EmojiPicker.jsx'>EmojiPicker.jsx</a></b></td>
+									<td style='padding: 8px;'>- Provides an interactive emoji-based emotion selector integrated into the user interface, enabling users to express their current feelings visually<br>- It enhances user engagement and emotional clarity within the application by offering a curated set of emotion icons, labels, and visual feedback, contributing to a more personalized and intuitive user experience across the platform.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/components/Spinner.jsx'>Spinner.jsx</a></b></td>
-									<td style='padding: 8px;'>- Provides a reusable loading indicator component that visually signifies ongoing processes within the user interface<br>- It enhances user experience by offering a consistent, customizable spinner across various parts of the application, supporting smooth and responsive interactions within the overall component architecture.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/components/Spinner.jsx'>Spinner.jsx</a></b></td>
+									<td style='padding: 8px;'>- Provides a reusable loading indicator component that visually communicates ongoing processes within the user interface<br>- It enhances user experience by signaling activity during data fetching or processing states, contributing to a cohesive and responsive design across the application<br>- The spinners customizable size and color ensure seamless integration with various UI themes and contexts.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/components/TitleBar.jsx'>TitleBar.jsx</a></b></td>
-									<td style='padding: 8px;'>- Provides a custom title bar component for the application, adapting its appearance and controls based on the environment<br>- In Electron, it offers window management buttons styled like macOS traffic lights, enabling users to close, minimize, or maximize the window<br>- Outside Electron, it displays a simple header with the application name, ensuring consistent branding across different platforms.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/components/TitleBar.jsx'>TitleBar.jsx</a></b></td>
+									<td style='padding: 8px;'>- Provides a custom title bar component for the application, enabling window control actions such as close, minimize, and maximize within an Electron environment<br>- When running outside Electron, it displays a static header<br>- This component integrates seamlessly into the overall architecture by offering platform-specific window management, enhancing user experience across desktop environments.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/components/RichEditor.jsx'>RichEditor.jsx</a></b></td>
-									<td style='padding: 8px;'>- RichEditor.jsxThis component provides a rich text editing interface within the application, enabling users to create, format, and annotate content dynamically<br>- It leverages the Tiptap editor framework to support a wide range of text styles, media embedding, and task management features, facilitating complex content creation workflows<br>- As a core part of the client-side architecture, it ensures a seamless and interactive editing experience, serving as the primary interface for user-generated content within the application.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/components/RichEditor.jsx'>RichEditor.jsx</a></b></td>
+									<td style='padding: 8px;'>- RichEditor.jsxThis component provides a rich text editing interface within the application, enabling users to create, format, and annotate content dynamically<br>- It leverages the Tiptap editor framework to support a wide range of text styles, media embedding, and task management features, facilitating complex document editing workflows<br>- As a core part of the client-side architecture, it ensures a seamless and interactive user experience for content creation, editing, and collaboration, integrating various extensions to enhance functionality and flexibility across the application.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/components/Modal.jsx'>Modal.jsx</a></b></td>
-									<td style='padding: 8px;'>- Provides a reusable modal component for user interactions, enabling confirmation prompts, alerts, or dialogs within the application<br>- It integrates seamlessly into the overall architecture by offering a flexible, styled overlay that manages user focus and actions, ensuring consistent modal behavior across different parts of the user interface.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/components/Modal.jsx'>Modal.jsx</a></b></td>
+									<td style='padding: 8px;'>- Provides a reusable modal component for user interactions, enabling confirmation prompts, alerts, or dialogs within the application<br>- It integrates seamlessly into the overall architecture by offering a flexible, styled overlay that manages user responses, ensuring consistent modal behavior across different features and enhancing user experience throughout the project.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/components/CommentsSidebar.jsx'>CommentsSidebar.jsx</a></b></td>
-									<td style='padding: 8px;'>- Provides an interactive sidebar for managing user comments within the application<br>- Enables viewing, searching, and selecting comments, highlighting active entries, and facilitating deletion<br>- Enhances user engagement by offering clear visual cues, timestamps, and contextual information, thereby supporting effective comment review and moderation as part of the overall content interaction architecture.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/components/CommentsSidebar.jsx'>CommentsSidebar.jsx</a></b></td>
+									<td style='padding: 8px;'>- Provides an interactive sidebar for managing user comments within the application<br>- It enables viewing, searching, highlighting, and deleting comments, facilitating seamless user engagement and feedback tracking<br>- The component integrates with the overall architecture to enhance content review workflows and improve user collaboration by offering an organized, accessible comment interface.</td>
 								</tr>
 								<tr style='border-bottom: 1px solid #eee;'>
-									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/main/client/src/components/Sidebar.jsx'>Sidebar.jsx</a></b></td>
-									<td style='padding: 8px;'>- Provides the sidebar navigation component for the applications user interface, enabling seamless access to main sections such as Today, Journal, Stats, and Settings<br>- It displays user information, including name and email, highlights birthdays, and facilitates user logout<br>- Integrates with authentication and routing systems to support personalized navigation within the overall architecture.</td>
+									<td style='padding: 8px;'><b><a href='https://github.com/stinoooo/ArcJournal/blob/master/client/src/components/Sidebar.jsx'>Sidebar.jsx</a></b></td>
+									<td style='padding: 8px;'>- Provides the navigational sidebar for the application, enabling users to access main sections such as Today, Journal, Stats, and Settings<br>- It displays user information, including name and email, highlights birthdays, and facilitates user logout<br>- Integrates with authentication and routing systems, supporting seamless navigation and personalized user experience within the overall app architecture.</td>
 								</tr>
 							</table>
 						</blockquote>
@@ -593,13 +597,9 @@ npm test
 
 ## License
 
-Arcjournal is protected under the [LICENSE](https://choosealicense.com/licenses/mit/) License. For more details, refer to the [LICENSE](https://choosealicense.com/licenses/mit/) file.
+Arcjournal is protected under the [MIT](https://github.com/stinoooo/ArcJournal/blob/main/LICENSE) License. For more details, refer to the [LICENSE](https://github.com/stinoooo/ArcJournal/blob/main/LICENSE) file.
 
 ---
-
-## Acknowledgments
-
-- Credit `contributors`, `inspiration`, `references`, etc.
 
 <div align="left"><a href="#top">⬆ Return</a></div>
 
