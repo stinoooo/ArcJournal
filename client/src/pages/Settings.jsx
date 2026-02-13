@@ -149,7 +149,7 @@ export default function Settings() {
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <img src={logo} alt="ArcNode" style={{ height: 32 }} />
           <div>
-            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14 }}>ArcJournal v1.1.0</p>
+            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14 }}>ArcJournal v{__APP_VERSION__}</p>
             <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Part of the ArcNode Network</p>
           </div>
         </div>

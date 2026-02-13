@@ -130,12 +130,12 @@ In `package.json`, find the `publishers` section and replace
 In `package.json`, increment the version before each release:
 
 ```json
-"version": "1.1.0"
+"version": "1.1.1"
 ```
 
 Also update it in the `packagerConfig`:
 ```json
-"appVersion": "1.1.0"
+"appVersion": "1.1.1"
 ```
 
 ---
