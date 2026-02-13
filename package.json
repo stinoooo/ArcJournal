@@ -1,6 +1,6 @@
 {
   "name": "arcjournal",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "ArcJournal — Part of the ArcNode Network",
     "author": {
     "name": "ArcNode Network"
@@ -38,7 +38,7 @@
         "executableName": "arcjournal",
         "icon": "assets/icon",
         "extraResource": ["assets"],
-        "appVersion": "1.0.6"
+        "appVersion": "1.0.7"
       },
       "publishers": [
         {
@@ -46,7 +46,7 @@
           "config": {
             "repository": {
               "owner": "stinoooo",
-              "name": "arcjournal"
+              "name": "ArcJournal"
             },
             "prerelease": false,
             "draft": true
