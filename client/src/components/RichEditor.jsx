@@ -13,6 +13,7 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import TextAlign from '@tiptap/extension-text-align';
 import { format } from 'date-fns';
+import { logo } from '@/assets';
 
 // ─── Inline SVG comment icon (replaces comment.png dependency) ──────────────
 const CommentIconSVG = ({ size = 14, color = 'currentColor' }) => (

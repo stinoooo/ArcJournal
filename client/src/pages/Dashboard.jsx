@@ -7,6 +7,7 @@ import EmojiPicker, { emotionImageSrc, emotionLabel } from '../components/EmojiP
 import Spinner from '../components/Spinner';
 import { isTodayBirthday, getTimeGreeting, getUserDisplayName, getUserAge } from '../utils/birthday';
 import { useNavigate } from 'react-router-dom';
+import { logo } from '@/assets';
 
 const today = format(new Date(), 'yyyy-MM-dd');
 const displayDate = format(new Date(), 'EEEE, MMMM d, yyyy');

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Spinner from '../components/Spinner';
+import { logo } from '@/assets';
 
 export default function SignIn() {
   const [identifier, setIdentifier] = useState('');

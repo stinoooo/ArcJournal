@@ -4,6 +4,7 @@ import { statsAPI } from '../api';
 import { emotionImageSrc, emotionLabel, emotionColor } from '../components/EmojiPicker';
 import Spinner from '../components/Spinner';
 import { useAuth } from '../context/AuthContext';
+import { logo } from '@/assets';
 
 function gradeColor(g) {
   if (!g) return 'var(--muted)';

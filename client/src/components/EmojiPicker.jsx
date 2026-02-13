@@ -1,4 +1,5 @@
 import React from 'react';
+import { logo } from '@/assets';
 
 // Local PNG emotion assets from assets/emotions/
 // Place these files in: assets/emotions/{name}.png

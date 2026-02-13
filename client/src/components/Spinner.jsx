@@ -1,4 +1,5 @@
 import React from 'react';
+import { logo } from '@/assets';
 
 export default function Spinner({ size = 20, color = 'var(--accent)' }) {
   return (

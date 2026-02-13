@@ -12,7 +12,6 @@ if (!isDev) {
     autoUpdater = require('electron-updater').autoUpdater;
     autoUpdater.autoDownload         = false;
     autoUpdater.autoInstallOnAppQuit = true;
-    // Must be an object with info/warn/error/debug — NOT app
     autoUpdater.logger = {
       info:  (...a) => console.log('[updater]',       ...a),
       warn:  (...a) => console.warn('[updater:warn]', ...a),
@@ -27,10 +26,7 @@ if (!isDev) {
 let mainWindow = null;
 
 function createWindow() {
-  // ── Icon: works in both dev and packaged builds ───────────
-  // In dev:        __dirname = electron/
-  // In production: __dirname = resources/app/electron/
-  const iconPath = path.join(__dirname, '..', 'assets', 'icon.ico');
+  const iconPath = path.join(app.getAppPath(), 'assets', 'icon.ico');
 
   mainWindow = new BrowserWindow({
     width:     1200,
@@ -40,7 +36,6 @@ function createWindow() {
     backgroundColor: '#0B1020',
     titleBarStyle: 'hiddenInset',
     frame:     false,
-    // Only set icon if the file exists — avoids crash if missing
     ...(fs.existsSync(iconPath) ? { icon: iconPath } : {}),
     webPreferences: {
       preload:          path.join(__dirname, 'preload.js'),
@@ -56,7 +51,18 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
-    mainWindow.loadFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+    // app.getAppPath() always resolves to the correct app root
+    // whether running from source or from a packaged .asar
+    const indexPath = path.join(app.getAppPath(), 'client', 'dist', 'index.html');
+    console.log('Loading:', indexPath, '| exists:', fs.existsSync(indexPath));
+
+    mainWindow.loadFile(indexPath).catch(err => {
+      console.error('loadFile failed:', err.message);
+    });
+
+    // Temporarily open devtools in production so you can see errors
+    // Remove this line once everything is working
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
 
     // Check for updates 5s after load
     if (autoUpdater) {
@@ -64,24 +70,10 @@ function createWindow() {
         setTimeout(() => autoUpdater.checkForUpdates(), 5000);
       });
 
-      autoUpdater.on('update-available', (info) => {
-        mainWindow?.webContents.send('update-available', {
-          version:      info.version,
-          releaseNotes: info.releaseNotes,
-        });
-      });
-      autoUpdater.on('update-not-available', () => {
-        mainWindow?.webContents.send('update-not-available');
-      });
-      autoUpdater.on('download-progress', (prog) => {
-        mainWindow?.webContents.send('update-progress', {
-          percent: Math.round(prog.percent),
-          speed:   Math.round(prog.bytesPerSecond / 1024),
-        });
-      });
-      autoUpdater.on('update-downloaded', () => {
-        mainWindow?.webContents.send('update-downloaded');
-      });
+      autoUpdater.on('update-available',    (info) => mainWindow?.webContents.send('update-available',    { version: info.version, releaseNotes: info.releaseNotes }));
+      autoUpdater.on('update-not-available', ()    => mainWindow?.webContents.send('update-not-available'));
+      autoUpdater.on('download-progress',   (prog) => mainWindow?.webContents.send('update-progress',    { percent: Math.round(prog.percent) }));
+      autoUpdater.on('update-downloaded',   ()     => mainWindow?.webContents.send('update-downloaded'));
       autoUpdater.on('error', (err) => {
         console.error('Update error:', err);
         mainWindow?.webContents.send('update-error', err.message);

@@ -12,6 +12,7 @@ import RichEditor from '../components/RichEditor';
 import CommentsSidebar from '../components/CommentsSidebar';
 import Spinner from '../components/Spinner';
 import { isDateBirthday } from '../utils/birthday';
+import { logo } from '@/assets';
 
 const today = format(new Date(), 'yyyy-MM-dd');
 const DOW = ['Su','Mo','Tu','We','Th','Fr','Sa'];

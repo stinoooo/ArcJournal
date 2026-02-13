@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { logo } from '@/assets';
 
 export default function TitleBar() {
   const isElectron = !!window.electronAPI;

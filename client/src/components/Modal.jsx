@@ -1,4 +1,5 @@
 import React from 'react';
+import { logo } from '@/assets';
 
 export default function Modal({ isOpen, title, message, confirmLabel = 'Confirm', confirmDanger = false, onConfirm, onCancel, children }) {
   if (!isOpen) return null;

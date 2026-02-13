@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { format, parseISO } from 'date-fns';
+import { logo } from '@/assets';
 
 export default function CommentsSidebar({ comments = [], activeCommentId, onCommentClick, onCommentHover, onDeleteComment }) {
   const [search, setSearch] = useState('');

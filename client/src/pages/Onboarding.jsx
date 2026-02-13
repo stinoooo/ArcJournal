@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { userAPI } from '../api';
 import Spinner from '../components/Spinner';
 import { logo } from '@/assets';
+import { logo } from '@/assets';
 
 const JOURNALING_GOALS = [
   { id: 'track-mood',       label: 'Track my mood',         icon: '📊' },

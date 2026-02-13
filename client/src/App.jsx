@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard';
 import Journal from './pages/Journal';
 import ArcStats from './pages/ArcWrapped';
 import Settings from './pages/Settings';
+import { logo } from '@/assets';
 
 function LoadingScreen() {
   return (
