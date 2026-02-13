@@ -1,6 +1,6 @@
 {
   "name": "arcjournal",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "ArcJournal — Part of the ArcNode Network",
     "author": {
     "name": "ArcNode Network"
@@ -38,7 +38,7 @@
         "executableName": "arcjournal",
         "icon": "assets/icon",
         "extraResource": ["assets"],
-        "appVersion": "1.0.0"
+        "appVersion": "1.0.6"
       },
       "publishers": [
         {

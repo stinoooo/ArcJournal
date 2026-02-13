@@ -10,7 +10,7 @@ const userRoutes    = require('./routes/user');
 const statsRoutes   = require('./routes/stats');
 
 const app  = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 // ── Middleware ────────────────────────────────────────────
 app.use(cors({ origin: ['http://localhost:5173', 'file://'] }));
