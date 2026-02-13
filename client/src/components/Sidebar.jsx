@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { isTodayBirthday, getUserDisplayName } from '../utils/birthday';
+import { logo } from '@/assets';
 
 const NAV_ITEMS = [
   { to: '/app',          label: 'Today',    icon: '✦'  },
@@ -38,7 +39,7 @@ export default function Sidebar() {
     }}>
       {/* Logo */}
       <div style={{ paddingLeft: 8, paddingBottom: 20, borderBottom: '1px solid var(--border)', marginBottom: 12 }}>
-        <img src="/bluelogo.png" alt="ArcNode" style={{ height: 28, display: 'block', marginBottom: 6 }} />
+        <img src={logo} alt="ArcNode" style={{ height: 28, display: 'block', marginBottom: 6 }} />
         <span style={{ fontSize: 10, color: 'var(--muted)', letterSpacing: '0.08em', fontFamily: 'var(--font-display)' }}>
           ARCJOURNAL
         </span>

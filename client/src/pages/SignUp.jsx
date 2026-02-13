@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Spinner from '../components/Spinner';
+import { logo } from '@/assets';
 
 export default function SignUp() {
   const [form, setForm] = useState({ email: '', username: '', password: '' });
@@ -55,7 +56,7 @@ export default function SignUp() {
 
       <div className="fade-in" style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <img src="/bluelogo.png" alt="ArcNode" style={{ height: 48, marginBottom: 12 }} />
+          <img src={logo} alt="ArcNode" style={{ height: 48, marginBottom: 12 }} />
           <h1 style={{
             fontFamily: 'var(--font-display)',
             fontSize: 26,

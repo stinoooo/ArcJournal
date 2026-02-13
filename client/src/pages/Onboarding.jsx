@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { userAPI } from '../api';
 import Spinner from '../components/Spinner';
+import { logo } from '@/assets';
 
 const JOURNALING_GOALS = [
   { id: 'track-mood',       label: 'Track my mood',         icon: '📊' },
@@ -169,7 +170,7 @@ export default function Onboarding() {
 function StepWelcome({ name, onNext }) {
   return (
     <div style={{ textAlign: 'center' }}>
-      <img src="/bluelogo.png" alt="ArcNode" style={{ height: 52, marginBottom: 20 }} />
+      <img src={logo} alt="ArcNode" style={{ height: 52, marginBottom: 20 }} />
       <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 800, marginBottom: 10, letterSpacing: '-0.02em' }}>
         Welcome to <span style={{ color: 'var(--accent)' }}>ArcJournal</span>
       </h1>

@@ -52,7 +52,7 @@ export default function SignIn() {
       <div className="fade-in" style={{ width: '100%', maxWidth: 400 }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <img src="/bluelogo.png" alt="ArcNode" style={{ height: 48, marginBottom: 12 }} />
+          <img src={logo} alt="ArcNode" style={{ height: 48, marginBottom: 12 }} />
           <h1 style={{
             fontFamily: 'var(--font-display)',
             fontSize: 26,

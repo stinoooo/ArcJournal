@@ -7,6 +7,7 @@ import { clearToken } from '../api';
 import { getUserAge } from '../utils/birthday';
 import Modal from '../components/Modal';
 import Spinner from '../components/Spinner';
+import { logo } from '@/assets';
 
 const GENDERS = [
   { value: 'male', label: 'Male' },
@@ -146,7 +147,7 @@ export default function Settings() {
       <section className="card" style={{ marginBottom: 24 }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, marginBottom: 12 }}>About ArcJournal</h2>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <img src="/bluelogo.png" alt="ArcNode" style={{ height: 32 }} />
+          <img src={logo} alt="ArcNode" style={{ height: 32 }} />
           <div>
             <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14 }}>ArcJournal v1.0.0</p>
             <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Part of the ArcNode Network</p>
