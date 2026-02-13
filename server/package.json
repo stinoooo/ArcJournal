@@ -1,6 +1,6 @@
 {
   "name": "arcjournal-server",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "publisher": "stinoooo",
   "description": "ArcJournal API Server",
   "main": "index.js",
