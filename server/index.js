@@ -36,8 +36,8 @@ app.use('/appeals',       appealsRoutes);
 app.use('/announcements', announcementsRoutes);
 app.use('/warnings',      warningsRoutes);
 
-app.get('/health', (_req, res) => res.json({ status: 'ok', version: '1.0.8' }));
-app.get('/',       (_req, res) => res.json({ name: 'ArcJournal API', version: '1.0.8', status: 'running' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', version: '1.1.0' }));
+app.get('/',       (_req, res) => res.json({ name: 'ArcJournal API', version: '1.1.0', status: 'running' }));
 
 // ── DB + Server ───────────────────────────────────────────
 async function start() {

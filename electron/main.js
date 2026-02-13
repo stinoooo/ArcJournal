@@ -62,7 +62,7 @@ function createWindow() {
 
     // Temporarily open devtools in production so you can see errors
     // Remove this line once everything is working
-    // mainWindow.webContents.openDevTools({ mode: 'detach' });
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
 
     // Check for updates 5s after load
     if (autoUpdater) {

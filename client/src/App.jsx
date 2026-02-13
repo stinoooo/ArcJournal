@@ -1,18 +1,24 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import TitleBar from './components/TitleBar';
 import Sidebar from './components/Sidebar';
 import Spinner from './components/Spinner';
-import SignIn from './pages/SignIn';
-import SignUp from './pages/SignUp';
-import Onboarding from './pages/Onboarding';
-import Dashboard from './pages/Dashboard';
-import Journal from './pages/Journal';
-import ArcStats from './pages/ArcWrapped';
-import Settings from './pages/Settings';
-import { logo } from '@/assets';
+import AnnouncementBanner from './components/AnnouncementBanner';
+import WarningModal from './components/WarningModal';
+import api from './api';
+
+import SignIn          from './pages/SignIn';
+import SignUp          from './pages/SignUp';
+import Onboarding      from './pages/Onboarding';
+import Dashboard       from './pages/Dashboard';
+import Journal         from './pages/Journal';
+import ArcStats        from './pages/ArcWrapped';
+import Settings        from './pages/Settings';
+import AdminPanel      from './pages/AdminPanel';
+import AccountStatus   from './pages/AccountStatus';
+import AccountStanding from './pages/AccountStanding';
 
 function LoadingScreen() {
   return (
@@ -23,10 +29,36 @@ function LoadingScreen() {
   );
 }
 
+function WarningCheck({ children }) {
+  const { user } = useAuth();
+  const [pendingWarnings, setPending] = useState(null);
+
+  useEffect(() => {
+    if (!user) return;
+    api.get('/warnings/unacknowledged')
+      .then(r => setPending(r.data.warnings || []))
+      .catch(() => setPending([]));
+  }, [user]);
+
+  if (pendingWarnings === null) return children;
+  if (pendingWarnings.length > 0) {
+    return (
+      <>
+        {children}
+        <WarningModal warnings={pendingWarnings} onDismiss={() => setPending([])} />
+      </>
+    );
+  }
+  return children;
+}
+
 function AuthLayout() {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  if (user) return <Navigate to={user.onboardingComplete ? '/app' : '/onboarding'} replace />;
+  if (user) {
+    if (['suspended', 'terminated', 'deleted'].includes(user.status)) return <Navigate to="/account-status" replace />;
+    return <Navigate to={user.onboardingComplete ? '/app' : '/onboarding'} replace />;
+  }
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <TitleBar />
@@ -39,6 +71,7 @@ function OnboardingLayout() {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/signin" replace />;
+  if (['suspended', 'terminated', 'deleted'].includes(user.status)) return <Navigate to="/account-status" replace />;
   if (user.onboardingComplete) return <Navigate to="/app" replace />;
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -52,14 +85,38 @@ function ProtectedLayout() {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/signin" replace />;
+  if (['suspended', 'terminated', 'deleted'].includes(user.status)) return <Navigate to="/account-status" replace />;
   if (!user.onboardingComplete) return <Navigate to="/onboarding" replace />;
+  return (
+    <WarningCheck>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <TitleBar />
+        <AnnouncementBanner />
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+          <Sidebar />
+          <main style={{ flex: 1, display: 'flex', overflow: 'hidden' }}><Outlet /></main>
+        </div>
+      </div>
+    </WarningCheck>
+  );
+}
+
+function AdminRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (!user || user.role !== 'admin') return <Navigate to="/app" replace />;
+  return <Outlet />;
+}
+
+function StatusRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/signin" replace />;
+  if (user.status === 'active') return <Navigate to="/app" replace />;
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <TitleBar />
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <Sidebar />
-        <main style={{ flex: 1, display: 'flex', overflow: 'hidden' }}><Outlet /></main>
-      </div>
+      <div style={{ flex: 1, overflow: 'hidden' }}><Outlet /></div>
     </div>
   );
 }
@@ -78,11 +135,18 @@ export default function App() {
               <Route element={<OnboardingLayout />}>
                 <Route path="/onboarding" element={<Onboarding />} />
               </Route>
+              <Route element={<StatusRoute />}>
+                <Route path="/account-status" element={<AccountStatus />} />
+              </Route>
               <Route path="/app" element={<ProtectedLayout />}>
                 <Route index element={<Dashboard />} />
-                <Route path="journal" element={<Journal />} />
-                <Route path="stats"   element={<ArcStats />} />
-                <Route path="settings" element={<Settings />} />
+                <Route path="journal"          element={<Journal />} />
+                <Route path="stats"            element={<ArcStats />} />
+                <Route path="settings"         element={<Settings />} />
+                <Route path="account-standing" element={<AccountStanding />} />
+                <Route element={<AdminRoute />}>
+                  <Route path="admin" element={<AdminPanel />} />
+                </Route>
               </Route>
               <Route path="*" element={<Navigate to="/app" replace />} />
             </Routes>
