@@ -1,11 +1,12 @@
 /**
- * make-admin.js — run once to promote a user to admin
- * Usage: node make-admin.js stijn@stinoo.dev
+ * Promote an ArcJournal user to admin.
+ * Usage: node make-admin.js you@example.com
  *
- * Reads MONGODB_URI from your .env file automatically.
+ * The user must have signed in to ArcJournal at least once with their Arcnode
+ * account (or still have an unlinked 1.x account with that email).
+ * Reads MONGODB_URI from the .env file in the repository root.
  */
-
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const mongoose = require('mongoose');
 
 const email = process.argv[2];
@@ -13,31 +14,21 @@ if (!email) {
   console.error('Usage: node make-admin.js <email>');
   process.exit(1);
 }
-
-const uri = process.env.MONGODB_URI;
-if (!uri) {
-  console.error('❌  MONGODB_URI not found in .env');
+if (!process.env.MONGODB_URI) {
+  console.error('MONGODB_URI is not set');
   process.exit(1);
 }
 
 async function run() {
-  await mongoose.connect(uri);
-  console.log('✅ Connected to MongoDB');
-
+  await mongoose.connect(process.env.MONGODB_URI);
   const result = await mongoose.connection
     .collection('users')
-    .updateOne({ email: email.toLowerCase() }, { $set: { role: 'admin' } });
-
-  if (result.matchedCount === 0) {
-    console.error(`❌  No user found with email: ${email}`);
-  } else {
-    console.log(`✅ ${email} is now an admin`);
-  }
-
+    .updateMany({ email: email.toLowerCase() }, { $set: { role: 'admin' } });
+  console.log(result.matchedCount ? `${email} is now an admin` : `No user found with email ${email}`);
   await mongoose.disconnect();
 }
 
-run().catch(err => {
-  console.error('Error:', err.message);
+run().catch((err) => {
+  console.error(err.message);
   process.exit(1);
 });

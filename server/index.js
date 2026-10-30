@@ -1,61 +1,52 @@
-require('dotenv').config({ path: '../.env' });
-const express  = require('express');
-const cors     = require('cors');
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const mongoose = require('mongoose');
+const { createApp } = require('./app');
+const { createVerifier, remoteKeys, fetchProfile } = require('./lib/arcnode');
+const User = require('./models/User');
+const Entry = require('./models/Entry');
 
-const authRoutes          = require('./routes/auth');
-const entriesRoutes       = require('./routes/entries');
-const wrapsRoutes         = require('./routes/wraps');
-const userRoutes          = require('./routes/user');
-const statsRoutes         = require('./routes/stats');
-const adminRoutes         = require('./routes/admin');
-const appealsRoutes       = require('./routes/appeals');
-const announcementsRoutes = require('./routes/announcements');
-const warningsRoutes      = require('./routes/warnings');
-
-const app  = express();
 const PORT = process.env.PORT || 8080;
 
-// ── Middleware ────────────────────────────────────────────
-const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
-  : ['http://localhost:5173', 'http://localhost:5174'];
+async function migrate() {
+  // Indexes changed in 2.0: email is no longer unique (Arcnode owns identity)
+  // and username only exists on legacy accounts.
+  await User.syncIndexes();
+  await Entry.syncIndexes();
 
-app.use(cors({ origin: [...allowedOrigins, 'file://'] }));
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ limit: '20mb', extended: true }));
-
-// ── Routes ────────────────────────────────────────────────
-app.use('/auth',          authRoutes);
-app.use('/entries',       entriesRoutes);
-app.use('/wraps',         wrapsRoutes);
-app.use('/user',          userRoutes);
-app.use('/stats',         statsRoutes);
-app.use('/admin',         adminRoutes);
-app.use('/appeals',       appealsRoutes);
-app.use('/announcements', announcementsRoutes);
-app.use('/warnings',      warningsRoutes);
-
-app.get('/health', (_req, res) => res.json({ status: 'ok', version: '1.1.1' }));
-app.get('/',       (_req, res) => res.json({ name: 'ArcJournal API', version: '1.1.1', status: 'running' }));
-
-// ── DB + Server ───────────────────────────────────────────
-async function start() {
-  await mongoose.connect(process.env.MONGODB_URI);
-  console.log('✅ MongoDB connected');
-
-  try {
-    const col     = mongoose.connection.collection('entries');
-    const indexes = await col.indexes();
-    const old     = indexes.find(i => i.key?.userId === 1 && i.key?.date === 1 && i.unique === true);
-    if (old) { await col.dropIndex(old.name); console.log('🔧 Dropped old unique index on entries(userId, date)'); }
-  } catch (e) { console.warn('Index migration note:', e.message); }
-
-  const server = app.listen(PORT, () => console.log(`🚀 ArcJournal API running on port ${PORT}`));
-  server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') { console.error(`❌ Port ${PORT} in use.`); process.exit(1); }
-    else throw err;
-  });
+  // 1.x stored weekly wraps with entry titles and grades in plaintext. Wraps
+  // are now computed on the device, so the old collection goes.
+  const wraps = await mongoose.connection.db.listCollections({ name: 'wraps' }).toArray();
+  if (wraps.length) {
+    await mongoose.connection.db.dropCollection('wraps');
+    console.log('Removed the legacy wraps collection');
+  }
 }
 
-start().catch(err => { console.error('❌ Startup error:', err.message); process.exit(1); });
+async function start() {
+  if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not set');
+  if (!process.env.ARCJOURNAL_CLIENT_ID) console.warn('ARCJOURNAL_CLIENT_ID is not set: every Arcnode sign-in will be refused');
+  if (!process.env.JWT_SECRET) console.warn('JWT_SECRET is not set: 1.x accounts cannot sign in with their password');
+
+  await mongoose.connect(process.env.MONGODB_URI);
+  console.log('MongoDB connected');
+  await migrate();
+
+  const keys = await remoteKeys();
+  const app = createApp({
+    auth: {
+      verifyToken: createVerifier({ audience: process.env.ARCJOURNAL_CLIENT_ID, keys }),
+      fetchProfile: (token) => fetchProfile(token),
+    },
+    corsOrigins: (process.env.CORS_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean),
+  });
+
+  const server = app.listen(PORT, () => console.log(`ArcJournal API running on port ${PORT}`));
+  const shutdown = () => server.close(() => mongoose.disconnect().finally(() => process.exit(0)));
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+}
+
+start().catch((err) => {
+  console.error('Startup error:', err.message);
+  process.exit(1);
+});

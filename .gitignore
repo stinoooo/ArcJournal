@@ -24,3 +24,7 @@ npm-debug.log*
 
 # Electron build caches
 .vite/
+
+# Local tooling
+.claude/
+client/.env*

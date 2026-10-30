@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { userAPI } from '../api';
+import { userAPI, errorMessage } from '../api';
 import Spinner from '../components/Spinner';
+import LegacyLinkCard from '../components/LegacyLinkCard';
 import { logo } from '@/assets';
 
 const JOURNALING_GOALS = [
@@ -27,7 +28,7 @@ const GENDERS = [
 const TOTAL_STEPS = 4;
 
 export default function Onboarding() {
-  const { user, refreshUser } = useAuth();
+  const { user, session, refreshUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -35,7 +36,7 @@ export default function Onboarding() {
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    displayName: user?.displayName || user?.username || '',
+    displayName: user?.displayName || '',
     dateOfBirth: '',
     gender: '',
     journalingGoals: [],
@@ -66,7 +67,7 @@ export default function Onboarding() {
       toast.success(`Welcome to ArcJournal, ${form.displayName}! 🎉`);
       navigate('/app');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to save profile');
+      toast.error(errorMessage(err, 'Failed to save profile'));
     } finally {
       setSaving(false);
     }
@@ -119,7 +120,12 @@ export default function Onboarding() {
         <div className="card" style={{ padding: 40 }}>
           {/* ── STEP 1: Welcome ── */}
           {step === 1 && (
-            <StepWelcome name={user?.username} onNext={next} />
+            <>
+              <StepWelcome name={user?.displayName} onNext={next} />
+              {session === 'arcnode' && <div style={{ marginTop: 20 }}>
+                <LegacyLinkCard onLinked={(u) => setForm((f) => ({ ...f, displayName: u.displayName || f.displayName }))} />
+              </div>}
+            </>
           )}
 
           {/* ── STEP 2: Name ── */}
@@ -158,7 +164,7 @@ export default function Onboarding() {
         </div>
 
         <p style={{ textAlign: 'center', marginTop: 20, fontSize: 11, color: 'var(--muted)', opacity: 0.45, letterSpacing: '0.05em' }}>
-          Part of the ArcNode Network
+          Part of Arcnode
         </p>
       </div>
     </div>
@@ -170,13 +176,13 @@ export default function Onboarding() {
 function StepWelcome({ name, onNext }) {
   return (
     <div style={{ textAlign: 'center' }}>
-      <img src={logo} alt="ArcNode" style={{ height: 52, marginBottom: 20 }} />
+      <img src={logo} alt="Arcnode" style={{ height: 52, marginBottom: 20 }} />
       <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 800, marginBottom: 10, letterSpacing: '-0.02em' }}>
         Welcome to <span style={{ color: 'var(--accent)' }}>ArcJournal</span>
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.7, marginBottom: 32, maxWidth: 360, margin: '0 auto 32px' }}>
-        Hey <strong style={{ color: 'var(--text)' }}>{name}</strong>! Before you start journaling,
-        let's personalise your experience. It'll only take a moment.
+        Hey{name && <> <strong style={{ color: 'var(--text)' }}>{name}</strong></>}! Before you start journaling,
+        let's personalize your experience. It'll only take a moment.
       </p>
       <div style={{
         display: 'flex', gap: 24, justifyContent: 'center',
@@ -184,7 +190,7 @@ function StepWelcome({ name, onNext }) {
       }}>
         {[
           { icon: '📖', text: 'Daily entries' },
-          { icon: '✦', text: 'AI summaries' },
+          { icon: '🔒', text: 'End-to-end encrypted' },
           { icon: '🎂', text: 'Birthday tracking' },
         ].map(({ icon, text }) => (
           <div key={text} style={{ textAlign: 'center' }}>
