@@ -10,7 +10,8 @@ const Entry = require('../models/Entry');
 const Warning = require('../models/Warning');
 const LegacyBackup = require('../models/LegacyBackup');
 
-process.env.JWT_SECRET = 'test-secret-for-password-sessions';
+// Signed 1.x app sessions; the server only recognizes them to say "update".
+process.env.JWT_SECRET = 'test-secret-for-1x-sessions';
 
 // Tokens look like "valid:<sub>". Anything else is rejected, like a bad signature.
 const auth = {
@@ -233,27 +234,43 @@ test('resetting the vault deletes the journal it protected', async () => {
   assert.equal(res.body.vault, null);
 });
 
-// ── 1.x accounts keep their password until they link ─────────
+// ── Arcnode is the only way in ────────────────────────────────
 
 const login = (identifier, password, client = 'arcjournal-2') =>
   request(app).post('/auth/login').send({ identifier, password, client });
 
-test('unlinked 1.x accounts sign in with their password in 2.0', async () => {
+test('password sign-in is gone: 2.0 apps are sent to Arcnode', async () => {
+  await legacyAccount();
+  for (const [identifier, password] of [['oldname', 'correct horse'], ['oldname', 'wrong'], ['nobody-at-all', 'whatever']]) {
+    const res = await login(identifier, password).expect(410);
+    assert.equal(res.body.code, 'arcnode_only');
+    assert.equal(res.body.token, undefined);
+    assert.match(res.body.error, /Sign in with Arcnode/);
+    assert.match(res.body.error, /Bring your old journal/);
+  }
+  const signup = await request(app).post('/auth/signup').send({}).expect(410);
+  assert.equal(signup.body.code, 'arcnode_only');
+});
+
+test('a password session from 2.0.x no longer signs in', async () => {
   const old = await legacyAccount();
-  await Entry.create({ userId: old._id, date: '2024-06-01', content: '<p>hi</p>' });
+  const { SignJWT } = await import('jose');
+  const passwordSession = await new SignJWT({ typ: 'arcjournal-password' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setSubject(String(old._id))
+    .setIssuedAt()
+    .setExpirationTime('30d')
+    .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+  const session = { Authorization: `Bearer ${passwordSession}` };
+  const res = await request(app).get('/auth/me').set(session).expect(401);
+  assert.equal(res.body.code, 'unauthenticated');
+  await request(app).get('/entries').set(session).expect(401);
+  await request(app).post('/user/link-legacy').set(session).send({ identifier: 'oldname', password: 'correct horse' }).expect(401);
+  assert.equal(await User.countDocuments({ _id: old._id }), 1);
+});
 
-  await login('oldname', 'wrong').expect(401);
-  await request(app).post('/auth/signup').send({}).expect(410);
-  const res = await login('OLD@example.com', 'correct horse').expect(200);
-  const session = { Authorization: `Bearer ${res.body.token}` };
-
-  const me = await request(app).get('/auth/me').set(session).expect(200);
-  assert.equal(me.body.session, 'password');
-  assert.equal(me.body.user.arcnodeId, undefined);
-  const list = await request(app).get('/entries').set(session).expect(200);
-  assert.equal(list.body.entries[0].legacy, true);
-  // Password sessions can also set up encryption and migrate.
-  await request(app).put('/vault').set(session).send({ vault: vault() }).expect(200);
+test('the dropped link-arcnode route is gone', async () => {
+  await request(app).post('/user/link-arcnode').set(as('alice')).send({ accessToken: 'valid:alice' }).expect(404);
 });
 
 test('tokens from 1.x apps are refused, so those apps are told to update', async () => {
@@ -268,39 +285,22 @@ test('tokens from 1.x apps are refused, so those apps are told to update', async
   assert.equal(res.body.code, 'upgrade_required');
 });
 
-test('linking from a password session moves the account to Arcnode and retires the password', async () => {
-  const old = await legacyAccount({ role: 'admin' });
-  const { body } = await login('oldname', 'correct horse').expect(200);
-  const session = { Authorization: `Bearer ${body.token}` };
-
-  await request(app).post('/user/link-arcnode').set(session).send({ accessToken: 'forged' }).expect(400);
-  const res = await request(app).post('/user/link-arcnode').set(session).send({ accessToken: 'valid:alice' }).expect(200);
-  assert.equal(String(res.body.user._id), String(old._id));
-  assert.equal(res.body.user.arcnodeId, 'alice');
-  assert.equal(res.body.user.role, 'admin');
-
-  const raw = await User.findById(old._id).lean();
-  assert.equal(raw.password, undefined);
-  // The password session and password sign-in stop working; Arcnode works.
-  await request(app).get('/auth/me').set(session).expect(401);
-  await login('oldname', 'correct horse').expect(401);
-  const me = await request(app).get('/auth/me').set(as('alice')).expect(200);
-  assert.equal(String(me.body.user._id), String(old._id));
-});
-
-test('linking into an Arcnode account that already uses ArcJournal merges the two', async () => {
-  await request(app).get('/auth/me').set(as('alice'));
+test('bringing an old journal into an Arcnode account that already uses ArcJournal merges the two', async () => {
+  await request(app).put('/vault').set(as('alice')).send({ vault: vault() }).expect(200);
   const old = await legacyAccount();
   await Entry.create({ userId: old._id, date: '2024-06-01', content: '<p>hi</p>' });
-  const { body } = await login('oldname', 'correct horse').expect(200);
   const res = await request(app)
-    .post('/user/link-arcnode')
-    .set('Authorization', `Bearer ${body.token}`)
-    .send({ accessToken: 'valid:alice' })
+    .post('/user/link-legacy')
+    .set(as('alice'))
+    .send({ identifier: 'old@example.com', password: 'correct horse' })
     .expect(200);
   assert.equal(res.body.user.arcnodeId, 'alice');
+  assert.equal(res.body.user.hasVault, true);
+  assert.equal(res.body.legacyEntries, 1);
   assert.equal(await User.countDocuments({ _id: old._id }), 0);
   assert.equal(await Entry.countDocuments({ userId: res.body.user._id }), 1);
+  // The 1.x password cannot be used to sign in afterwards, or before.
+  await login('oldname', 'correct horse').expect(410);
 });
 
 test('two encrypted journals are never merged by accident', async () => {
@@ -403,7 +403,3 @@ test('a rejected migration leaves no safety copy behind', async () => {
   assert.equal(raw.content, '<p>secret</p>');
 });
 
-test('a password sign-in for an unknown account fails like a wrong password', async () => {
-  const res = await login('nobody-at-all', 'whatever').expect(401);
-  assert.match(res.body.error, /do not match/);
-});

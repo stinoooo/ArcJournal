@@ -2,7 +2,8 @@
  * A throwaway API for trying the app without Backboard or a database:
  * in-memory MongoDB, and any Bearer token "dev:<name>" signs in as <name>.
  * Seeds one ArcJournal 1.x account (legacy@example.com / legacy-password)
- * with a few plaintext entries, to try linking and the encryption migration.
+ * with a few plaintext entries, to try "Bring your old journal" and the
+ * encryption migration.
  *
  *   node dev-server.js            (port 8080)
  */

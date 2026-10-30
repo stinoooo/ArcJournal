@@ -25,7 +25,7 @@ async function migrate() {
 async function start() {
   if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not set');
   if (!process.env.ARCJOURNAL_CLIENT_ID) console.warn('ARCJOURNAL_CLIENT_ID is not set: every Arcnode sign-in will be refused');
-  if (!process.env.JWT_SECRET) console.warn('JWT_SECRET is not set: 1.x accounts cannot sign in with their password');
+  if (!process.env.JWT_SECRET) console.warn('JWT_SECRET is not set: signed-in 1.x apps are told their session expired instead of to update');
 
   await mongoose.connect(process.env.MONGODB_URI);
   console.log('MongoDB connected');
