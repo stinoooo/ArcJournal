@@ -38,7 +38,13 @@ router.post('/login', loginLimiter, async (req, res) => {
     password: { $exists: true },
     $or: [{ email: id }, { username: new RegExp(`^${escapeRegex(id)}$`, 'i') }],
   });
-  if (!user || !(await user.comparePassword(password))) {
+  if (!user) {
+    // Same work as a real check, so the response time does not reveal
+    // whether an account exists.
+    await legacy.dummyCompare(password);
+    return res.status(401).json({ error: 'That email or username and password do not match. If you connected an Arcnode account, sign in with Arcnode instead.' });
+  }
+  if (!(await user.comparePassword(password))) {
     return res.status(401).json({ error: 'That email or username and password do not match. If you connected an Arcnode account, sign in with Arcnode instead.' });
   }
   if (user.arcnodeId) {

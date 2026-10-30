@@ -263,7 +263,7 @@ test('tokens from 1.x apps are refused, so those apps are told to update', async
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('30d')
     .sign(new TextEncoder().encode(process.env.JWT_SECRET));
-  await request(app).get('/auth/me').set('Authorization', `Bearer ${oldStyle}`).expect(401);
+  await request(app).get('/auth/me').set('Authorization', `Bearer ${oldStyle}`).expect(426);
   const res = await login('oldname', 'correct horse', null).expect(426);
   assert.equal(res.body.code, 'upgrade_required');
 });
@@ -334,4 +334,76 @@ test('the plaintext is snapshotted on the server before an entry is encrypted', 
 
   await request(app).post('/vault/reset').set(as('alice')).send({ confirm: 'DELETE MY JOURNAL' }).expect(200);
   assert.equal(await LegacyBackup.countDocuments(), 0);
+});
+
+// ── 2.0.1: what a 1.x app actually sends ─────────────────────
+
+test('a 1.x app (file:// origin) gets the download-2.0 message, not a failed preflight', async () => {
+  for (const origin of ['file://', 'null']) {
+    const pre = await request(app)
+      .options('/auth/login')
+      .set('Origin', origin)
+      .set('Access-Control-Request-Method', 'POST')
+      .set('Access-Control-Request-Headers', 'content-type')
+      .expect(204);
+    assert.equal(pre.headers['access-control-allow-origin'], origin);
+
+    const res = await request(app)
+      .post('/auth/login')
+      .set('Origin', origin)
+      .send({ identifier: 'oldname', password: 'whatever' })
+      .expect(426);
+    assert.equal(res.headers['access-control-allow-origin'], origin);
+    assert.match(res.body.error, /arcnode\.dev\/downloads/);
+  }
+});
+
+test('a signed-in 1.x app is told to update instead of "session expired"', async () => {
+  const old = await legacyAccount();
+  const { SignJWT } = await import('jose');
+  const oldToken = await new SignJWT({ userId: String(old._id) })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('30d')
+    .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+  const res = await request(app)
+    .get('/auth/me')
+    .set('Origin', 'file://')
+    .set('Authorization', `Bearer ${oldToken}`)
+    .expect(426);
+  assert.equal(res.body.code, 'upgrade_required');
+  assert.equal(res.headers['access-control-allow-origin'], 'file://');
+});
+
+test('file:// and null origins only reach /auth', async () => {
+  const res = await request(app).get('/entries').set('Origin', 'null').set(as('alice'));
+  assert.equal(res.headers['access-control-allow-origin'], undefined);
+});
+
+test('deleting a migrated entry deletes its server-side safety copy', async () => {
+  await request(app).get('/auth/me').set(as('alice'));
+  const alice = await User.findOne({ arcnodeId: 'alice' });
+  const old = await Entry.create({ userId: alice._id, date: '2025-01-02', content: '<p>secret</p>' });
+  await request(app).put(`/entries/${old._id}`).set(as('alice')).send({ body: blob(1) }).expect(200);
+  assert.equal(await LegacyBackup.countDocuments({ entryId: old._id }), 1);
+  await request(app).delete(`/entries/${old._id}`).set(as('alice')).expect(200);
+  assert.equal(await LegacyBackup.countDocuments({ entryId: old._id }), 0);
+});
+
+test('a rejected migration leaves no safety copy behind', async () => {
+  await request(app).get('/auth/me').set(as('alice'));
+  const alice = await User.findOne({ arcnodeId: 'alice' });
+  const old = await Entry.create({ userId: alice._id, date: '2025-01-02', content: '<p>secret</p>' });
+  await request(app)
+    .put(`/entries/${old._id}`)
+    .set(as('alice'))
+    .send({ body: blob(1), versions: [{ body: { iv: 'x', ciphertext: 'not sealed' } }] })
+    .expect(400);
+  assert.equal(await LegacyBackup.countDocuments(), 0);
+  const raw = await mongoose.connection.db.collection('entries').findOne({ _id: old._id });
+  assert.equal(raw.content, '<p>secret</p>');
+});
+
+test('a password sign-in for an unknown account fails like a wrong password', async () => {
+  const res = await login('nobody-at-all', 'whatever').expect(401);
+  assert.match(res.body.error, /do not match/);
 });

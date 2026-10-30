@@ -2,6 +2,7 @@ const User = require('../models/User');
 const legacy = require('../lib/legacy');
 
 const BLOCKED = ['suspended', 'terminated', 'deleted'];
+const UPGRADE_MESSAGE = 'This version of ArcJournal is no longer supported. Download the latest version from arcnode.dev/downloads.';
 
 /**
  * Resolves the Bearer token to an ArcJournal user. Two kinds are accepted:
@@ -37,6 +38,9 @@ module.exports = async function authMiddleware(req, res, next) {
     } else {
       const userId = await legacy.verifySession(token);
       if (userId) user = await User.findOne({ _id: userId, arcnodeId: { $exists: false }, password: { $exists: true } });
+      if (!user && (await legacy.isLegacyAppToken(token))) {
+        return res.status(426).json({ error: UPGRADE_MESSAGE, code: 'upgrade_required' });
+      }
       if (!user) return res.status(401).json({ error: 'Your session expired. Sign in again.', code: 'unauthenticated' });
       req.authKind = 'password';
     }
