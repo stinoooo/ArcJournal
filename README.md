@@ -23,8 +23,9 @@
   comments on your own text, attachments and the last ten versions of every entry.
 - **A calendar** of every day you wrote, with search and several entries per day.
 - **Stats**: streaks, words written, grade and mood trends, your busiest days and months.
-- **End-to-end encryption.** Everything you write is encrypted on your computer before it is
-  saved. The server stores only ciphertext; nobody else can read your journal, including Arcnode.
+- **End-to-end encryption.** Everything you write in 2.0 is encrypted on your computer before
+  it leaves it, so the server stores it only as ciphertext and nobody else can read it, including
+  Arcnode. See [1.x journals](#coming-from-arcjournal-1x) for the one exception.
 - **One Arcnode account** to sign in, with the passkeys and two-factor authentication you
   already set up on arcnode.dev.
 
@@ -58,6 +59,8 @@ The app is a public client: it holds no secret, receives the code on a loopback 
 (`127.0.0.1:47825` or `47826`) and keeps the refresh token encrypted with the OS keychain in
 the main process. The interface only ever sees short-lived access tokens.
 
+### Coming from ArcJournal 1.x
+
 Coming from ArcJournal 1.x? Your account keeps working. Either:
 
 - choose **Sign in with your ArcJournal 1.x password**. The app offers to connect an Arcnode
@@ -66,10 +69,15 @@ Coming from ArcJournal 1.x? Your account keeps working. Either:
 - or sign in with Arcnode and choose **Used ArcJournal before? Bring your old journal**.
 
 When you set your passphrase, your 1.x entries are encrypted. First the app saves a full
-unencrypted backup to `Documents/ArcJournal backups`, and it checks every entry decrypts to
-exactly the original before the plaintext on the server is replaced. If it is interrupted, it
-continues on the next unlock. The server also keeps a snapshot of the plaintext for 90 days so
-support can undo it; see [DEPLOYMENT.md](DEPLOYMENT.md).
+unencrypted backup to `Documents/ArcJournal backups`, and then, on your computer, it checks that
+every encrypted entry decrypts to exactly the original before the plaintext on the server is
+replaced. If it is interrupted, it continues on the next unlock.
+
+Entries written in 2.0 are only ever stored encrypted. Two exceptions apply to journals
+from ArcJournal 1.x: entries you have not opened in 2.0 yet stay in plaintext on the server
+until you do, and when they are encrypted the server keeps a plaintext safety copy of each one
+for 90 days (so a failed migration can be undone), then deletes it. Deleting an entry or your
+journal deletes its copy straight away. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Install
 
@@ -78,8 +86,8 @@ or the [releases](https://github.com/stinoooo/ArcJournal/releases).
 
 | System | File | Notes |
 | --- | --- | --- |
-| Windows 10 and 11 | `ArcJournal-<version>-Setup.exe` | Updates install in the background. |
-| macOS 12 or later | `ArcJournal-<version>.dmg` (Apple silicon and Intel) | Not signed yet: the first time, right-click the app and choose **Open**. |
+| Windows 10 and 11 | `ArcJournal-<version>-Setup.exe` | Not code-signed yet: if SmartScreen appears, choose **More info**, then **Run anyway**. Updates install in the background. |
+| macOS 13 or later | `ArcJournal-<version>.dmg` (Apple silicon and Intel) | Not signed yet: the first time, right-click the app and choose **Open**. |
 | Debian, Ubuntu | `arcjournal_<version>_amd64.deb` | `sudo apt install ./arcjournal_*.deb` |
 | Fedora, openSUSE | `arcjournal-<version>-1.x86_64.rpm` | `sudo dnf install ./arcjournal-*.rpm` |
 | Other Linux | `ArcJournal-linux-x64-<version>.zip` | Unzip and run `arcjournal`. |
@@ -89,10 +97,20 @@ restart into them:
 
 - **Windows**: Squirrel installs the update when you restart.
 - **macOS** and the **Linux zip**: the app checks the download against the release's `SHA256SUMS`,
-  then replaces itself after it quits and opens again. The app has to sit in a folder you can
+  which must carry a valid signature from the ArcJournal release key built into the app, then
+  replaces itself after it quits and opens again. The app has to sit in a folder you can
   write to (it does in Applications).
 - **.deb and .rpm**: the new package is checked the same way and installed through your
   system's password prompt (pkexec).
+
+## Known limitations
+
+- An encrypted entry is bound to its date, but not yet to its own id: someone with access to the
+  server could swap two entries of the same day without breaking them. Binding the id changes the
+  encrypted format, so it is planned for a later version.
+- Editing a 1.x entry in 2.0 encrypts it right away, the same way the migration does.
+- The Windows installer and the macOS app are not code-signed yet.
+- The editor (TipTap 2) has moderate npm audit notices that need the move to TipTap 3.
 
 ## Project layout
 
@@ -112,7 +130,7 @@ Needs Node.js 22.12 or later and a MongoDB (local or Docker).
 npm run setup          # installs the root, client/ and server/
 cp .env.example .env   # then fill in MONGODB_URI and ARCJOURNAL_CLIENT_ID
 npm run dev            # API, Vite and Electron together
-npm test               # server API tests and client unit tests
+npm test               # updater tests, server API tests and client unit tests
 ```
 
 To try the interface without Backboard or a database, run the throwaway API and the browser

@@ -6,6 +6,10 @@ on:
   push:
     tags: ['v*']
 
+env:
+  # Keep the MongoDB test binary out of installs that get packaged.
+  MONGOMS_DISABLE_POSTINSTALL: '1'
+
 permissions:
   contents: write
 

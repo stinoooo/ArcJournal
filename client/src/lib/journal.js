@@ -49,6 +49,9 @@ async function sealEntry(date, data) {
 
 // Last known text per entry, to decide when an edit deserves a version snapshot.
 const lastContent = new Map();
+// Entries still in 1.x plaintext. Saving one encrypts it, so its old
+// versions are sealed and sent along instead of being dropped.
+const legacyIds = new Set();
 
 async function openEntry(raw) {
   const meta = {
@@ -62,6 +65,7 @@ async function openEntry(raw) {
   if (raw.legacy) {
     const entry = { ...EMPTY, ...meta, ...Object.fromEntries(Object.entries(raw).filter(([, v]) => v != null)), legacy: true };
     lastContent.set(raw._id, entry.content);
+    legacyIds.add(raw._id);
     return entry;
   }
   const key = requireKey();
@@ -92,7 +96,18 @@ export const entriesAPI = {
 
   async update(id, data) {
     const snapshot = lastContent.has(id) && lastContent.get(id) !== (data.content || '');
-    const res = await sealedEntriesAPI.update(id, { ...(await sealEntry(data.date, data)), snapshot });
+    let versions;
+    if (legacyIds.has(id)) {
+      const key = requireKey();
+      const { data: old } = await sealedEntriesAPI.versions(id);
+      versions = [];
+      for (const v of old.versions) {
+        if (v.content == null) continue;
+        versions.push({ body: await seal(key, bodyOf({ ...data, content: v.content }), bodyContext(data.date)), savedAt: v.savedAt });
+      }
+    }
+    const res = await sealedEntriesAPI.update(id, { ...(await sealEntry(data.date, data)), snapshot, ...(versions ? { versions } : {}) });
+    legacyIds.delete(id);
     return { data: { entry: await openEntry(res.data.entry) } };
   },
 

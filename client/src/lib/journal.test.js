@@ -167,4 +167,13 @@ describe('encrypting 1.x entries', () => {
     expect(await encryptLegacyEntries({ saveBackup })).toEqual({ count: 0, backup: null });
     expect(saveBackup).not.toHaveBeenCalled();
   });
+
+  it('keeps the old versions when a 1.x entry is edited before it was migrated', async () => {
+    const id = addLegacy('2025-01-01', { content: '<p>now</p>' }, ['<p>before</p>']);
+    await entriesAPI.list();
+    await entriesAPI.update(id, { date: '2025-01-01', content: '<p>edited</p>' });
+    expect(server.state.entries.get(id).enc).toBe(1);
+    const versions = (await entriesAPI.versions(id, '2025-01-01')).data.versions;
+    expect(versions.map((v) => v.content)).toEqual(['<p>before</p>']);
+  });
 });

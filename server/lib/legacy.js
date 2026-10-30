@@ -46,6 +46,30 @@ async function verifySession(token) {
   }
 }
 
+// A bcrypt hash of a random string, at the same cost as 1.x passwords.
+const DUMMY_HASH = '$2b$12$9xx1Ti4rDVX8OERcz16S3OR2l/9tSM6WFFxcKsjIkOk1R6s1zCtPK';
+
+async function dummyCompare(password) {
+  const bcrypt = require('bcryptjs');
+  await bcrypt.compare(String(password), DUMMY_HASH).catch(() => false);
+}
+
+/**
+ * True for a session token issued by ArcJournal 1.x (HS256, { userId },
+ * no typ), so those apps can be told to update instead of "session expired".
+ */
+async function isLegacyAppToken(token) {
+  const key = secret();
+  if (!key) return false;
+  const { jwtVerify } = await import('jose');
+  try {
+    const { payload } = await jwtVerify(token, key, { algorithms: ['HS256'] });
+    return payload.typ === undefined && typeof payload.userId === 'string';
+  } catch {
+    return false;
+  }
+}
+
 class LinkConflict extends Error {}
 
 /**
@@ -101,4 +125,4 @@ async function linkToArcnode(legacyUser, arcnodeId, profile) {
   return legacyUser;
 }
 
-module.exports = { issueSession, verifySession, mergeInto, linkToArcnode, LinkConflict };
+module.exports = { issueSession, verifySession, isLegacyAppToken, dummyCompare, mergeInto, linkToArcnode, LinkConflict };

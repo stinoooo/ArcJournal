@@ -4,6 +4,25 @@
  * release file replaces it, and the checksum that file must have.
  */
 const path = require('path');
+const crypto = require('crypto');
+
+/**
+ * The public half of the ArcJournal release key. Every release's SHA256SUMS
+ * is signed with the private half (tools/sign-release.mjs), which never
+ * leaves the maintainer's computer. Updates whose checksums do not carry a
+ * valid signature are offered as a download link instead of installed.
+ */
+const RELEASE_PUBLIC_KEY = 'MCowBQYDK2VwAyEAtzvjEZRPUDPnEEiK6+WDg6m75SHChkC0Q0NQp2BQxC4=';
+
+/** True when `signature` (base64, Ed25519) signs exactly `sums`. */
+function verifySums(sums, signature, publicKey = RELEASE_PUBLIC_KEY) {
+  try {
+    const key = crypto.createPublicKey({ key: Buffer.from(publicKey, 'base64'), format: 'der', type: 'spki' });
+    return crypto.verify(null, Buffer.from(sums, 'utf8'), key, Buffer.from(String(signature).trim(), 'base64'));
+  } catch {
+    return false;
+  }
+}
 
 function newer(a, b) {
   const pa = String(a).split('.').map((n) => parseInt(n, 10) || 0);
@@ -58,4 +77,4 @@ function parseSums(text) {
   return sums;
 }
 
-module.exports = { newer, installKind, pickAsset, parseSums };
+module.exports = { newer, installKind, pickAsset, parseSums, verifySums, RELEASE_PUBLIC_KEY };

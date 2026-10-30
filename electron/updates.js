@@ -23,7 +23,7 @@ const { Readable } = require('stream');
 const { pipeline } = require('stream/promises');
 const { app, autoUpdater, shell } = require('electron');
 const { repository } = require('../package.json');
-const { newer, installKind, pickAsset, parseSums } = require('./update-plan');
+const { newer, installKind, pickAsset, parseSums, verifySums } = require('./update-plan');
 
 const REPO = repository.url.replace(/^.*github\.com\//, '').replace(/\.git$/, '');
 const CHECK_EVERY = 6 * 60 * 60 * 1000;
@@ -86,11 +86,18 @@ async function checkGitHub() {
   const manual = () => update({ version, status: 'manual', url: release.html_url });
   const asset = pickAsset(release.assets || [], install.kind, version);
   const sumsAsset = (release.assets || []).find((a) => a.name === 'SHA256SUMS');
-  if (!asset || !sumsAsset) return manual();
+  const sigAsset = (release.assets || []).find((a) => a.name === 'SHA256SUMS.sig');
+  if (!asset || !sumsAsset || !sigAsset) return manual();
   if ((install.kind === 'mac-app' || install.kind === 'portable') && !writable(path.dirname(install.target))) return manual();
 
-  const sums = parseSums(await (await fetch(sumsAsset.browser_download_url, { headers: { 'User-Agent': HEADERS()['User-Agent'] } })).text());
-  const expected = sums.get(asset.name);
+  const get = async (a) => (await fetch(a.browser_download_url, { headers: { 'User-Agent': HEADERS()['User-Agent'] } })).text();
+  const sumsText = await get(sumsAsset);
+  // The checksums are only trusted when signed by the ArcJournal release key.
+  if (!verifySums(sumsText, await get(sigAsset))) {
+    console.warn('[updates] SHA256SUMS signature did not verify');
+    return manual();
+  }
+  const expected = parseSums(sumsText).get(asset.name);
   if (!expected) return manual();
 
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'arcjournal-update-'));
@@ -113,9 +120,9 @@ async function checkGitHub() {
     const entries = fs.readdirSync(unpacked);
     const name = install.kind === 'mac-app' ? entries.find((e) => e.endsWith('.app')) : entries[0];
     if (!name) throw new Error('The update package was empty');
-    staged = { kind: install.kind, from: path.join(unpacked, name), dir };
+    staged = { kind: install.kind, from: path.join(unpacked, name), dir, file, expected };
   } else {
-    staged = { kind: install.kind, from: file, dir };
+    staged = { kind: install.kind, from: file, dir, file, expected };
   }
   update({ version, status: 'ready', ready: true, action: install.kind === 'deb' || install.kind === 'rpm' ? 'install' : 'restart' });
 }
@@ -172,6 +179,15 @@ async function apply() {
   if (!state?.ready) return undefined;
   if (install.kind === 'squirrel') return autoUpdater.quitAndInstall();
   if (!staged) return undefined;
+
+  // Check the download again right before it is installed, in case anything
+  // touched the temporary folder since it was verified.
+  const hash = crypto.createHash('sha256').update(fs.readFileSync(staged.file)).digest('hex');
+  if (hash !== staged.expected) {
+    staged = null;
+    update({ version: state.version, status: 'manual', url: `https://github.com/${REPO}/releases/latest` });
+    return undefined;
+  }
 
   if (staged.kind === 'mac-app') {
     return swapAfterExit(install.target, staged.from, `xattr -dr com.apple.quarantine "$2" 2>/dev/null; open "$2"`);

@@ -19,7 +19,11 @@ function createApp({ auth, corsOrigins = [] }) {
 
   app.use(helmet());
   // The desktop app is served from app://arcjournal. Browsers in development
-  // use the Vite server.
+  // use the Vite server. ArcJournal 1.x loads from file://, so its requests
+  // carry Origin "file://" or "null": /auth answers those too, so a 1.x app
+  // gets the "download 2.0" message instead of a failed preflight. Every
+  // route needs a Bearer token and no route uses cookies.
+  app.use('/auth', cors({ origin: ['app://arcjournal', 'file://', 'null', ...corsOrigins] }));
   app.use(cors({ origin: ['app://arcjournal', ...corsOrigins] }));
   app.use(rateLimit({ windowMs: 60 * 1000, limit: 300, standardHeaders: 'draft-7', legacyHeaders: false }));
   app.use(express.json({ limit: '16mb' }));

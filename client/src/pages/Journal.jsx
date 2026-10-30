@@ -30,10 +30,9 @@ function fmtSize(b) {
   if (b < 1048576) return (b/1024).toFixed(1) + 'KB';
   return (b/1048576).toFixed(1) + 'MB';
 }
+// Parsed into an inert document, so nothing in an entry can run or load.
 function htmlToText(html) {
-  const d = document.createElement('div');
-  d.innerHTML = html;
-  return d.textContent || d.innerText || '';
+  return new DOMParser().parseFromString(html || '', 'text/html').body.textContent || '';
 }
 
 export default function Journal() {

@@ -66,17 +66,18 @@ router.put('/:id', async (req, res) => {
   if (!entry) return res.status(404).json({ error: 'Entry not found' });
 
   if (!entry.enc) {
-    // Encrypting a legacy entry. First keep a copy of the plaintext (see
-    // models/LegacyBackup.js), then drop every plaintext field and version.
+    // Encrypting a legacy entry. Check the request first, so a rejected one
+    // leaves nothing behind; then keep a copy of the plaintext (see
+    // models/LegacyBackup.js) and drop every plaintext field and version.
+    const migrated = Array.isArray(versions) ? versions.slice(-MAX_VERSIONS) : [];
+    if (!migrated.every((v) => isSealed(v?.body, MAX_BODY))) {
+      return res.status(400).json({ error: 'Versions must be encrypted on your device' });
+    }
     await LegacyBackup.updateOne(
       { entryId: entry._id },
       { $setOnInsert: { userId: req.user._id, entryId: entry._id, entry: entry.toObject() } },
       { upsert: true },
     );
-    const migrated = Array.isArray(versions) ? versions.slice(-MAX_VERSIONS) : [];
-    if (!migrated.every((v) => isSealed(v?.body, MAX_BODY))) {
-      return res.status(400).json({ error: 'Versions must be encrypted on your device' });
-    }
     for (const key of Entry.LEGACY_FIELDS) entry.set(key, undefined);
     entry.versions = migrated.map((v) => ({ body: sealed(v.body), savedAt: v.savedAt ? new Date(v.savedAt) : new Date() }));
   } else {
@@ -98,6 +99,8 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const entry = await Entry.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
   if (!entry) return res.status(404).json({ error: 'Entry not found' });
+  // A deleted entry takes its server-side 1.x safety copy with it.
+  await LegacyBackup.deleteOne({ entryId: entry._id, userId: req.user._id });
   res.json({ message: 'Entry deleted' });
 });
 

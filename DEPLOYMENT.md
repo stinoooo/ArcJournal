@@ -30,8 +30,9 @@ Node.js version from `engines` in the root `package.json`.
   and wraps are now computed in the app.
 - 1.x accounts and entries stay as they are. Their owners keep signing in with their password
   in 2.0 until they connect an Arcnode account; only then is the password removed.
-- ArcJournal 1.x apps get `426 Upgrade Required` with a link to the download page. Their
-  saved sessions are not accepted by 2.0.
+- ArcJournal 1.x apps get `426 Upgrade Required` with a link to the download page, both when
+  they sign in and when they start with a saved 1.x session. 1.x loads from `file://`, so
+  `/auth` accepts the `file://` and `null` origins (tested in `server/test/api.test.js`).
 
 ## Encrypting 1.x journals, and undoing it
 
@@ -82,7 +83,11 @@ does not use it, so do not store it.
 4. The [release workflow](.github/workflows/release.yml) builds Windows (Squirrel), macOS
    (universal `.dmg` and `.zip`) and Linux (`.deb`, `.rpm`, `.zip`) and uploads them to a
    draft release.
-5. Check the draft, then publish it.
+5. Sign the checksums on the maintainer's computer: `node tools/sign-release.mjs v<version>`. It
+   signs the draft's `SHA256SUMS` with `%USERPROFILE%\.arcnode\arcjournal-release-key.pem`
+   (backed up on the key backup drive) and uploads `SHA256SUMS.sig`. macOS and Linux installs
+   only update from releases with a valid signature.
+6. Check the draft, then publish it.
 
 Updates are automatic once a release is published:
 
