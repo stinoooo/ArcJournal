@@ -1,130 +1,188 @@
-const { app, BrowserWindow, ipcMain, Menu, safeStorage } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, protocol, net, session, shell, screen } = require('electron');
 const path = require('path');
-const fs   = require('fs');
+const fs = require('fs');
+const { pathToFileURL } = require('url');
+const auth = require('./auth');
+const secrets = require('./secrets');
+const updates = require('./updates');
 
-const isDev      = process.env.NODE_ENV === 'development';
-const TOKEN_FILE = path.join(app.getPath('userData'), 'session.bin');
+// Squirrel runs the app once while installing to create shortcuts; quit then.
+if (require('electron-squirrel-startup')) app.quit();
 
-// ── Auto-updater (production only) ───────────────────────────
-let autoUpdater;
-if (!isDev) {
-  try {
-    autoUpdater = require('electron-updater').autoUpdater;
-    autoUpdater.autoDownload         = false;
-    autoUpdater.autoInstallOnAppQuit = true;
-    autoUpdater.logger = {
-      info:  (...a) => console.log('[updater]',       ...a),
-      warn:  (...a) => console.warn('[updater:warn]', ...a),
-      error: (...a) => console.error('[updater:err]', ...a),
-      debug: (...a) => {},
-    };
-  } catch (e) {
-    console.warn('electron-updater not available:', e.message);
-  }
-}
+const isDev = !app.isPackaged && process.env.NODE_ENV === 'development';
+const DIST = path.join(__dirname, '..', 'client', 'dist');
+const ORIGIN = 'app://arcjournal';
+const isMac = process.platform === 'darwin';
+
+// The packaged UI is served from app://arcjournal rather than file://, so it has
+// a real origin: the CSP's 'self' works and the page cannot read local files.
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } },
+]);
+
+if (!app.requestSingleInstanceLock()) app.quit();
 
 let mainWindow = null;
 
-function createWindow() {
-  const iconPath = path.join(app.getAppPath(), 'assets', 'icon.ico');
+// ── Window state ─────────────────────────────────────────────
+const stateFile = () => path.join(app.getPath('userData'), 'window-state.json');
 
+function loadBounds() {
+  try {
+    const saved = JSON.parse(fs.readFileSync(stateFile(), 'utf8'));
+    const visible = screen.getAllDisplays().some(({ workArea: a }) =>
+      saved.x < a.x + a.width && saved.x + saved.width > a.x && saved.y < a.y + a.height && saved.y + saved.height > a.y);
+    return visible ? saved : { width: saved.width, height: saved.height, maximized: saved.maximized };
+  } catch {
+    return { width: 1200, height: 800 };
+  }
+}
+
+function saveBounds(win) {
+  try {
+    fs.writeFileSync(stateFile(), JSON.stringify({ ...win.getNormalBounds(), maximized: win.isMaximized() }));
+  } catch { /* not worth failing a close over */ }
+}
+
+// ── Window ───────────────────────────────────────────────────
+function createWindow() {
+  const bounds = loadBounds();
   mainWindow = new BrowserWindow({
-    width:     1200,
-    height:    800,
-    minWidth:  550,
+    ...bounds,
+    minWidth: 550,
     minHeight: 600,
+    show: false,
     backgroundColor: '#0B1020',
-    titleBarStyle: 'hiddenInset',
-    frame:     false,
-    ...(fs.existsSync(iconPath) ? { icon: iconPath } : {}),
+    title: 'ArcJournal',
+    // macOS keeps its own traffic lights; Windows and Linux use the app's title bar.
+    ...(isMac ? { titleBarStyle: 'hiddenInset' } : { frame: false }),
+    ...(process.platform === 'linux' ? { icon: path.join(__dirname, '..', 'assets', 'icons', '512x512.png') } : {}),
     webPreferences: {
-      preload:          path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration:  false,
-      sandbox:          false,
+      nodeIntegration: false,
+      sandbox: true,
+      webSecurity: true,
+      spellcheck: true,
     },
   });
 
-  Menu.setApplicationMenu(null);
+  if (bounds.maximized) mainWindow.maximize();
+  mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.on('close', () => saveBounds(mainWindow));
+  mainWindow.on('closed', () => { mainWindow = null; });
+
+  // Links open in the browser; the app window never navigates away.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https:\/\//.test(url)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!url.startsWith(isDev ? 'http://localhost:5173' : ORIGIN)) event.preventDefault();
+  });
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
-    // app.getAppPath() always resolves to the correct app root
-    // whether running from source or from a packaged .asar
-    const indexPath = path.join(app.getAppPath(), 'client', 'dist', 'index.html');
-    console.log('Loading:', indexPath, '| exists:', fs.existsSync(indexPath));
-
-    mainWindow.loadFile(indexPath).catch(err => {
-      console.error('loadFile failed:', err.message);
-    });
-
-    // Temporarily open devtools in production so you can see errors
-    // Remove this line once everything is working
-    // mainWindow.webContents.openDevTools({ mode: 'detach' });
-
-    // Check for updates 5s after load
-    if (autoUpdater) {
-      mainWindow.webContents.once('did-finish-load', () => {
-        setTimeout(() => autoUpdater.checkForUpdates(), 5000);
-      });
-
-      autoUpdater.on('update-available',    (info) => mainWindow?.webContents.send('update-available',    { version: info.version, releaseNotes: info.releaseNotes }));
-      autoUpdater.on('update-not-available', ()    => mainWindow?.webContents.send('update-not-available'));
-      autoUpdater.on('download-progress',   (prog) => mainWindow?.webContents.send('update-progress',    { percent: Math.round(prog.percent) }));
-      autoUpdater.on('update-downloaded',   ()     => mainWindow?.webContents.send('update-downloaded'));
-      autoUpdater.on('error', (err) => {
-        console.error('Update error:', err);
-        mainWindow?.webContents.send('update-error', err.message);
-      });
-    }
+    mainWindow.loadURL(`${ORIGIN}/index.html`);
   }
 }
 
-// ── Update IPC ────────────────────────────────────────────────
-ipcMain.handle('update-download', () => autoUpdater?.downloadUpdate());
-ipcMain.handle('update-install',  () => autoUpdater?.quitAndInstall());
-ipcMain.handle('update-check',    () => autoUpdater?.checkForUpdates());
-ipcMain.handle('get-version',     () => app.getVersion());
+function serveApp() {
+  protocol.handle('app', (request) => {
+    const { pathname } = new URL(request.url);
+    const file = path.normalize(path.join(DIST, decodeURIComponent(pathname)));
+    if (!file.startsWith(DIST + path.sep)) return new Response('Not found', { status: 404 });
+    return net.fetch(pathToFileURL(file).toString());
+  });
+}
 
-// ── Token storage ─────────────────────────────────────────────
-ipcMain.handle('store-token', async (_e, token) => {
-  try {
-    const data = safeStorage.isEncryptionAvailable()
-      ? safeStorage.encryptString(token)
-      : Buffer.from(token, 'utf8');
-    fs.writeFileSync(TOKEN_FILE, data);
-    return { ok: true };
-  } catch (e) { return { ok: false, error: e.message }; }
-});
+function lockDownSession() {
+  // The journal needs no camera, location or notifications. Copying a
+  // recovery key needs the clipboard.
+  session.defaultSession.setPermissionRequestHandler((_wc, permission, callback) => {
+    callback(permission === 'clipboard-sanitized-write');
+  });
+}
 
-ipcMain.handle('get-token', async () => {
-  try {
-    if (!fs.existsSync(TOKEN_FILE)) return null;
-    const data = fs.readFileSync(TOKEN_FILE);
-    return safeStorage.isEncryptionAvailable()
-      ? safeStorage.decryptString(data)
-      : data.toString('utf8');
-  } catch { return null; }
-});
+function buildMenu() {
+  if (!isMac) { Menu.setApplicationMenu(null); return; }
+  Menu.setApplicationMenu(Menu.buildFromTemplate([
+    { role: 'appMenu' },
+    { role: 'editMenu' },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' },
+        { type: 'separator' }, { role: 'togglefullscreen' },
+        ...(isDev ? [{ type: 'separator' }, { role: 'reload' }, { role: 'toggleDevTools' }] : []),
+      ],
+    },
+    { role: 'windowMenu' },
+    {
+      role: 'help',
+      submenu: [
+        { label: 'ArcJournal on arcnode.dev', click: () => shell.openExternal('https://arcnode.dev/projects/arcjournal') },
+        { label: 'Report a problem', click: () => shell.openExternal('https://github.com/stinoooo/ArcJournal/issues') },
+      ],
+    },
+  ]));
+}
 
-ipcMain.handle('clear-token', async () => {
-  try {
-    if (fs.existsSync(TOKEN_FILE)) fs.unlinkSync(TOKEN_FILE);
-    return { ok: true };
-  } catch (e) { return { ok: false, error: e.message }; }
-});
+// ── IPC ──────────────────────────────────────────────────────
+const fromApp = (event) => {
+  const url = event.senderFrame?.url || '';
+  return url.startsWith(ORIGIN) || (isDev && url.startsWith('http://localhost:5173'));
+};
 
-// ── Window controls ───────────────────────────────────────────
-ipcMain.handle('window-minimize', (e) => BrowserWindow.fromWebContents(e.sender)?.minimize());
-ipcMain.handle('window-maximize', (e) => {
+function handle(channel, fn) {
+  ipcMain.handle(channel, (event, ...args) => {
+    if (!fromApp(event)) throw new Error('Blocked');
+    return fn(event, ...args);
+  });
+}
+
+handle('auth-sign-in', () => auth.signIn());
+handle('auth-cancel', () => auth.cancel());
+handle('auth-sign-out', () => auth.signOut());
+handle('auth-signed-in', () => auth.isSignedIn());
+handle('auth-access-token', () => auth.getAccessToken());
+
+const vaultSecret = (userId) => `journal-key-${String(userId).replace(/[^a-f0-9]/gi, '')}`;
+ipcMain.on('vault-can-remember', (event) => { event.returnValue = fromApp(event) && secrets.isStrong(); });
+handle('vault-remember', (_e, userId, payload) => { if (secrets.isStrong()) secrets.write(vaultSecret(userId), String(payload)); });
+handle('vault-recall', (_e, userId) => secrets.read(vaultSecret(userId)));
+handle('vault-forget', (_e, userId) => secrets.remove(vaultSecret(userId)));
+
+handle('window-minimize', (e) => BrowserWindow.fromWebContents(e.sender)?.minimize());
+handle('window-maximize', (e) => {
   const win = BrowserWindow.fromWebContents(e.sender);
   if (win?.isMaximized()) win.unmaximize(); else win?.maximize();
 });
-ipcMain.handle('window-close', (e) => BrowserWindow.fromWebContents(e.sender)?.close());
+handle('window-close', (e) => BrowserWindow.fromWebContents(e.sender)?.close());
 
-// ── Lifecycle ─────────────────────────────────────────────────
-app.whenReady().then(createWindow);
-app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+handle('app-version', () => app.getVersion());
+handle('update-check', () => updates.check());
+handle('update-current', () => updates.current());
+handle('update-install', () => updates.install());
+
+// ── Lifecycle ────────────────────────────────────────────────
+app.on('second-instance', () => {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.focus();
+});
+
+app.whenReady().then(() => {
+  // 1.x kept its password session here.
+  fs.rmSync(path.join(app.getPath('userData'), 'session.bin'), { force: true });
+  serveApp();
+  lockDownSession();
+  buildMenu();
+  createWindow();
+  updates.start((channel, payload) => mainWindow?.webContents.send(channel, payload));
+});
+
+app.on('window-all-closed', () => { if (!isMac) app.quit(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });

@@ -1,77 +1,56 @@
 {
   "name": "arcjournal",
-  "version": "1.1.1",
-  "description": "ArcJournal — Part of the ArcNode Network",
-    "author": {
-    "name": "ArcNode Network"
+  "productName": "ArcJournal",
+  "version": "2.0.0",
+  "description": "Private, end-to-end encrypted journaling. Part of Arcnode.",
+  "author": {
+    "name": "Arcnode",
+    "email": "info@arcnode.dev"
+  },
+  "license": "MIT",
+  "homepage": "https://arcnode.dev/projects/arcjournal",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stinoooo/ArcJournal.git"
   },
   "main": "electron/main.js",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "arcnode": {
+    "issuer": "https://backboard.arcnode.dev",
+    "clientId": "",
+    "redirectPorts": [
+      47825,
+      47826
+    ]
+  },
   "scripts": {
-    "start":   "concurrently \"npm run server\" \"npm run client\" \"wait-on http://localhost:5173 && npm run electron\"",
-    "server":  "cd server && npm run dev",
-    "client":  "cd client && npm run dev",
-    "electron": "cross-env NODE_ENV=development electron .",
-    "build":   "cd client && npm run build",
-    "make":    "npm run build && electron-forge make",
+    "postinstall": "npm --prefix client install && npm --prefix server install",
+    "dev": "concurrently -k -n api,ui,app \"npm --prefix server run dev\" \"npm --prefix client run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "build": "npm --prefix client run build",
+    "test": "npm --prefix server test && npm --prefix client test",
+    "icons": "node tools/make-icons.mjs",
     "package": "npm run build && electron-forge package",
+    "make": "npm run build && electron-forge make",
     "publish": "npm run build && electron-forge publish"
   },
   "dependencies": {
-    "electron-updater": "^6.3.9"
+    "electron-squirrel-startup": "^1.0.1"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^7.4.0",
-    "@electron-forge/maker-deb": "^7.4.0",
-    "@electron-forge/maker-dmg": "^7.4.0",
-    "@electron-forge/maker-squirrel": "^7.4.0",
-    "@electron-forge/maker-zip": "^7.4.0",
-    "@electron-forge/publisher-github": "^7.4.0",
-    "concurrently": "^8.2.2",
-    "cross-env": "^7.0.3",
-    "electron": "^31.0.0",
-    "wait-on": "^7.2.0"
-  },
-  "config": {
-    "forge": {
-      "packagerConfig": {
-        "name": "ArcJournal",
-        "executableName": "arcjournal",
-        "icon": "assets/icon",
-        "extraResource": ["assets"],
-        "appVersion": "1.1.1"
-      },
-      "publishers": [
-        {
-          "name": "@electron-forge/publisher-github",
-          "config": {
-            "repository": {
-              "owner": "stinoooo",
-              "name": "ArcJournal"
-            },
-            "prerelease": false,
-            "draft": true
-          }
-        }
-      ],
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "arcjournal",
-            "authors": "ArcNode Network",
-            "description": "ArcJournal — Personal journaling app",
-            "setupIcon": "assets/icon.ico"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": ["darwin"]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        }
-      ]
-    }
+    "@electron-forge/cli": "^8.0.1",
+    "@electron-forge/maker-deb": "^8.0.1",
+    "@electron-forge/maker-dmg": "^8.0.1",
+    "@electron-forge/maker-rpm": "^8.0.1",
+    "@electron-forge/maker-squirrel": "^8.0.1",
+    "@electron-forge/maker-zip": "^8.0.1",
+    "@electron-forge/publisher-github": "^8.0.1",
+    "concurrently": "^10.0.6",
+    "cross-env": "^10.1.0",
+    "electron": "^45.1.0",
+    "png2icons": "^2.0.1",
+    "sharp": "^0.35.5",
+    "wait-on": "^9.5.1"
   }
 }

@@ -7,6 +7,7 @@ import TitleBar from './components/TitleBar';
 import Sidebar from './components/Sidebar';
 import Spinner from './components/Spinner';
 import AnnouncementBanner from './components/AnnouncementBanner';
+import UpdateBanner from './components/UpdateBanner';
 import WarningModal from './components/WarningModal';
 import api from './api';
 
@@ -106,6 +107,7 @@ function JournalGate() {
     <WarningCheck>
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <TitleBar />
+        <UpdateBanner />
         <AnnouncementBanner />
         <MigrationNotice />
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>

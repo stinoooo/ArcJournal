@@ -1,0 +1,80 @@
+const path = require('path');
+const { version } = require('./package.json');
+
+const icons = path.join(__dirname, 'assets', 'icons');
+
+module.exports = {
+  packagerConfig: {
+    name: 'ArcJournal',
+    executableName: 'arcjournal',
+    appBundleId: 'dev.arcnode.arcjournal',
+    appCategoryType: 'public.app-category.lifestyle',
+    appCopyright: 'Copyright Arcnode',
+    icon: path.join(icons, 'icon'),
+    asar: true,
+    // Only what the app runs: Electron code and the built UI.
+    ignore: (file) => {
+      if (!file) return false;
+      return !/^\/(electron|client$|client\/dist|package\.json$|node_modules)/.test(file);
+    },
+  },
+  makers: [
+    {
+      name: '@electron-forge/maker-squirrel',
+      config: {
+        name: 'arcjournal',
+        authors: 'Arcnode',
+        description: 'Private, end-to-end encrypted journaling',
+        setupIcon: path.join(icons, 'icon.ico'),
+        iconUrl: 'https://raw.githubusercontent.com/stinoooo/ArcJournal/main/assets/icons/icon.ico',
+        setupExe: `ArcJournal-${version}-Setup.exe`,
+      },
+    },
+    {
+      name: '@electron-forge/maker-dmg',
+      platforms: ['darwin'],
+      config: { name: `ArcJournal-${version}`, icon: path.join(icons, 'icon.icns'), format: 'ULFO' },
+    },
+    { name: '@electron-forge/maker-zip', platforms: ['darwin', 'linux'] },
+    {
+      name: '@electron-forge/maker-deb',
+      config: {
+        options: {
+          name: 'arcjournal',
+          productName: 'ArcJournal',
+          genericName: 'Journal',
+          categories: ['Office', 'Utility'],
+          icon: path.join(icons, '512x512.png'),
+          homepage: 'https://arcnode.dev/projects/arcjournal',
+          maintainer: 'Arcnode <info@arcnode.dev>',
+        },
+      },
+    },
+    {
+      name: '@electron-forge/maker-rpm',
+      config: {
+        options: {
+          name: 'arcjournal',
+          productName: 'ArcJournal',
+          genericName: 'Journal',
+          categories: ['Office', 'Utility'],
+          icon: path.join(icons, '512x512.png'),
+          homepage: 'https://arcnode.dev/projects/arcjournal',
+          license: 'MIT',
+        },
+      },
+    },
+  ],
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: { owner: 'stinoooo', name: 'ArcJournal' },
+        prerelease: false,
+        // Releases start as drafts; publishing one makes it the update for everyone.
+        draft: true,
+        tagPrefix: 'v',
+      },
+    },
+  ],
+};

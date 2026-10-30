@@ -202,6 +202,15 @@ export default function Settings() {
           <div>
             <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14 }}>ArcJournal v{__APP_VERSION__}</p>
             <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Part of Arcnode</p>
+            {window.electronAPI?.updates && (
+              <button className="btn btn-ghost" style={{ marginTop: 10, padding: '4px 12px', fontSize: 12 }}
+                onClick={async () => {
+                  await window.electronAPI.updates.check();
+                  toast.info('Checking for updates. A banner appears when one is out.');
+                }}>
+                Check for updates
+              </button>
+            )}
           </div>
         </div>
       </section>

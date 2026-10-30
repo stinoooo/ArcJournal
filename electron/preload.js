@@ -1,28 +1,38 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  // Token storage
-  storeToken: (token) => ipcRenderer.invoke('store-token', token),
-  getToken:   ()      => ipcRenderer.invoke('get-token'),
-  clearToken: ()      => ipcRenderer.invoke('clear-token'),
+// Only present when the system keychain can protect a remembered journal key.
+const canRemember = ipcRenderer.sendSync('vault-can-remember');
 
-  // Window controls
+contextBridge.exposeInMainWorld('electronAPI', {
+  platform: process.platform,
+
+  auth: {
+    signIn: () => ipcRenderer.invoke('auth-sign-in'),
+    cancel: () => ipcRenderer.invoke('auth-cancel'),
+    signOut: () => ipcRenderer.invoke('auth-sign-out'),
+    isSignedIn: () => ipcRenderer.invoke('auth-signed-in'),
+    getAccessToken: () => ipcRenderer.invoke('auth-access-token'),
+  },
+
+  vault: canRemember ? {
+    remember: (userId, payload) => ipcRenderer.invoke('vault-remember', userId, payload),
+    recall: (userId) => ipcRenderer.invoke('vault-recall', userId),
+    forget: (userId) => ipcRenderer.invoke('vault-forget', userId),
+  } : null,
+
   minimize: () => ipcRenderer.invoke('window-minimize'),
   maximize: () => ipcRenderer.invoke('window-maximize'),
-  close:    () => ipcRenderer.invoke('window-close'),
+  close: () => ipcRenderer.invoke('window-close'),
 
-  // App info
-  getVersion: () => ipcRenderer.invoke('get-version'),
-
-  // Auto-updater
-  checkForUpdate:  () => ipcRenderer.invoke('update-check'),
-  downloadUpdate:  () => ipcRenderer.invoke('update-download'),
-  installUpdate:   () => ipcRenderer.invoke('update-install'),
-
-  // Update event listeners (renderer subscribes to these)
-  onUpdateAvailable:    (cb) => ipcRenderer.on('update-available',    (_e, info)   => cb(info)),
-  onUpdateNotAvailable: (cb) => ipcRenderer.on('update-not-available', ()          => cb()),
-  onUpdateProgress:     (cb) => ipcRenderer.on('update-progress',     (_e, prog)   => cb(prog)),
-  onUpdateDownloaded:   (cb) => ipcRenderer.on('update-downloaded',    ()          => cb()),
-  onUpdateError:        (cb) => ipcRenderer.on('update-error',         (_e, msg)   => cb(msg)),
+  getVersion: () => ipcRenderer.invoke('app-version'),
+  updates: {
+    check: () => ipcRenderer.invoke('update-check'),
+    current: () => ipcRenderer.invoke('update-current'),
+    install: () => ipcRenderer.invoke('update-install'),
+    onAvailable: (cb) => {
+      const listener = (_e, info) => cb(info);
+      ipcRenderer.on('update-available', listener);
+      return () => ipcRenderer.removeListener('update-available', listener);
+    },
+  },
 });
