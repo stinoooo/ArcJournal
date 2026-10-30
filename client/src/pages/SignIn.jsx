@@ -3,20 +3,24 @@ import { useAuth } from '../context/AuthContext';
 import { errorMessage } from '../api';
 import Spinner from '../components/Spinner';
 import CenteredCard, { ErrorNote } from '../components/CenteredCard';
-import PasswordSignIn from '../components/PasswordSignIn';
 
 export default function SignIn() {
   const { signIn, offline, refreshUser } = useAuth();
   const [waiting, setWaiting] = useState(false);
   const [error, setError] = useState('');
+  const [cancelled, setCancelled] = useState(false);
 
   const handleSignIn = async () => {
     setError('');
+    setCancelled(false);
     setWaiting(true);
     try {
       await signIn();
     } catch (err) {
-      setError(errorMessage(err, 'Sign-in did not finish. Try again.'));
+      const message = errorMessage(err, 'Sign-in did not finish. Try again.');
+      // Cancelling, here or in the browser, is a choice, not an error.
+      if (message === 'Sign-in cancelled.') setCancelled(true);
+      else setError(message);
     } finally {
       setWaiting(false);
     }
@@ -45,6 +49,11 @@ export default function SignIn() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <ErrorNote>{error}</ErrorNote>
+        {cancelled && (
+          <p role="status" style={{ color: 'var(--muted)', fontSize: 14, textAlign: 'center' }}>
+            Sign-in was cancelled. Try again when you're ready.
+          </p>
+        )}
         <button className="btn btn-primary" onClick={handleSignIn} disabled={waiting} style={{ width: '100%', justifyContent: 'center' }}>
           {waiting ? <><Spinner size={16} color="#0B1020" /> Waiting for your browser…</> : 'Sign in with Arcnode'}
         </button>
@@ -53,10 +62,13 @@ export default function SignIn() {
             Cancel
           </button>
         )}
-        {!waiting && <PasswordSignIn />}
       </div>
 
-      <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: 'var(--muted)' }}>
+      <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: 'var(--muted)', lineHeight: 1.5 }}>
+        Used ArcJournal 1.x? Sign in with Arcnode, then choose Bring your old journal.
+      </p>
+
+      <p style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: 'var(--muted)' }}>
         No account?{' '}
         <a href="https://backboard.arcnode.dev/signup" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
           Create an Arcnode account

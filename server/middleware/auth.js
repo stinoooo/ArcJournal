@@ -1,15 +1,13 @@
 const User = require('../models/User');
-const legacy = require('../lib/legacy');
+const { isLegacyAppToken } = require('../lib/legacy');
 
 const BLOCKED = ['suspended', 'terminated', 'deleted'];
 const UPGRADE_MESSAGE = 'This version of ArcJournal is no longer supported. Download the latest version from arcnode.dev/downloads.';
 
 /**
- * Resolves the Bearer token to an ArcJournal user. Two kinds are accepted:
- *
- * - An Arcnode access token from Backboard. The user is created on first sign-in.
- * - A password session for an ArcJournal 1.x account that has not been linked
- *   to Arcnode yet (see lib/legacy.js). These stop working once it is linked.
+ * Resolves the Bearer token, an Arcnode access token from Backboard, to an
+ * ArcJournal user. The user is created on first sign-in. A session token from
+ * an ArcJournal 1.x app gets 426 so that app tells its user to update.
  *
  * The verifier and profile lookup come from app.locals so tests can swap them out.
  */
@@ -22,27 +20,22 @@ module.exports = async function authMiddleware(req, res, next) {
   const { verifyToken, fetchProfile } = req.app.locals.auth;
 
   try {
-    let user = null;
     const claims = await verifyToken(token);
-    if (claims) {
-      user = await User.findOne({ arcnodeId: claims.sub });
-      if (!user) {
-        const profile = await fetchProfile(token).catch(() => null);
-        user = await User.create({
-          arcnodeId: claims.sub,
-          email: (profile?.email || '').toLowerCase(),
-          displayName: profile?.name || '',
-        });
-      }
-      req.authKind = 'arcnode';
-    } else {
-      const userId = await legacy.verifySession(token);
-      if (userId) user = await User.findOne({ _id: userId, arcnodeId: { $exists: false }, password: { $exists: true } });
-      if (!user && (await legacy.isLegacyAppToken(token))) {
+    if (!claims) {
+      if (await isLegacyAppToken(token)) {
         return res.status(426).json({ error: UPGRADE_MESSAGE, code: 'upgrade_required' });
       }
-      if (!user) return res.status(401).json({ error: 'Your session expired. Sign in again.', code: 'unauthenticated' });
-      req.authKind = 'password';
+      return res.status(401).json({ error: 'Your session expired. Sign in again.', code: 'unauthenticated' });
+    }
+
+    let user = await User.findOne({ arcnodeId: claims.sub });
+    if (!user) {
+      const profile = await fetchProfile(token).catch(() => null);
+      user = await User.create({
+        arcnodeId: claims.sub,
+        email: (profile?.email || '').toLowerCase(),
+        displayName: profile?.name || '',
+      });
     }
 
     // A suspension with an end date lifts itself once that date has passed.

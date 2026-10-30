@@ -1,5 +1,30 @@
 # Changelog
 
+## 2.1.0
+
+### Changed
+
+- ArcJournal signs in with Arcnode only. The **Sign in with your ArcJournal 1.x password**
+  option is gone, along with connecting an Arcnode account from a password sign-in. If you used
+  1.x, sign in with Arcnode and choose **Bring your old journal**, on the welcome screen or in
+  Settings, to move your old journal into your Arcnode account.
+- Password sessions from 2.0.0 and 2.0.1 no longer work, and the app deletes a saved one when it
+  starts. If you were signed in with your 1.x password, sign in with Arcnode.
+- ArcJournal uses the normal window frame of your system: minimize, maximize and close on the
+  right on Windows, the usual buttons on macOS and Linux. The custom title bar is gone.
+- Pages use the width of a large window: Today, Stats, Settings, Account Standing and the admin
+  panel are wider, Settings shows two columns, and small text is larger and easier to read.
+
+### Fixed
+
+- Errors from the app no longer start with "Error invoking remote method", and cancelling
+  sign-in shows a short note instead of an error.
+
+### Removed
+
+- Password sign-in (`POST /auth/login` now answers `410` with `arcnode_only`; 1.x apps still get
+  `426` and the download link) and `POST /user/link-arcnode`.
+
 ## 2.0.1
 
 ### Fixed

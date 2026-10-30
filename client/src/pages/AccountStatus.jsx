@@ -80,12 +80,12 @@ export default function AccountStatus() {
 
           {user?.statusReason && (
             <div style={{ background: 'var(--bg)', borderRadius: 10, padding: '14px 16px', marginBottom: 16 }}>
-              <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6, fontWeight: 600, letterSpacing: '0.05em' }}>REASON</div>
+              <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 6, fontWeight: 600, letterSpacing: '0.05em' }}>REASON</div>
               <div style={{ fontSize: 14, color: 'var(--text)' }}>{user.statusReason}</div>
             </div>
           )}
 
-          <div style={{ fontSize: 13, color: 'var(--muted)' }}>
+          <div style={{ fontSize: 14, color: 'var(--muted)' }}>
             If you believe this action was made in error, you can submit an appeal below.
           </div>
         </div>
@@ -101,14 +101,14 @@ export default function AccountStatus() {
                   <div style={{ textAlign: 'center', padding: '20px 0' }}>
                     <div style={{ fontSize: 28, marginBottom: 12 }}>⏳</div>
                     <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>Appeal submitted</div>
-                    <div style={{ fontSize: 13, color: 'var(--muted)' }}>Your appeal is being reviewed. You'll be notified of any changes.</div>
+                    <div style={{ fontSize: 14, color: 'var(--muted)' }}>Your appeal is being reviewed. You'll be notified of any changes.</div>
                   </div>
                 )}
                 {appeal.status === 'approved' && (
                   <div style={{ textAlign: 'center', padding: '20px 0' }}>
                     <div style={{ fontSize: 28, marginBottom: 12 }}>✅</div>
                     <div style={{ fontSize: 15, fontWeight: 600, color: '#10b981', marginBottom: 8 }}>Appeal approved</div>
-                    <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16 }}>
+                    <div style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 16 }}>
                       {appeal.adminResponse || 'Your account has been restored.'}
                     </div>
                     <button onClick={() => window.location.reload()} style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: '#10b981', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
@@ -121,7 +121,7 @@ export default function AccountStatus() {
                     <div style={{ fontSize: 28, marginBottom: 12 }}>❌</div>
                     <div style={{ fontSize: 15, fontWeight: 600, color: '#ef4444', marginBottom: 8 }}>Appeal denied</div>
                     {appeal.adminResponse && (
-                      <div style={{ fontSize: 13, color: 'var(--muted)', background: 'var(--bg)', borderRadius: 8, padding: '10px 14px' }}>
+                      <div style={{ fontSize: 14, color: 'var(--muted)', background: 'var(--bg)', borderRadius: 8, padding: '10px 14px' }}>
                         {appeal.adminResponse}
                       </div>
                     )}
@@ -132,11 +132,11 @@ export default function AccountStatus() {
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{ fontSize: 28, marginBottom: 12 }}>✓</div>
                 <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>Appeal submitted successfully</div>
-                <div style={{ fontSize: 13, color: 'var(--muted)' }}>We'll review your case as soon as possible.</div>
+                <div style={{ fontSize: 14, color: 'var(--muted)' }}>We'll review your case as soon as possible.</div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
+                <p style={{ margin: 0, fontSize: 14, color: 'var(--muted)', lineHeight: 1.6 }}>
                   Explain why you believe this moderation action was applied incorrectly. Be specific and honest — this helps us review your case faster.
                 </p>
                 <textarea
@@ -144,7 +144,7 @@ export default function AccountStatus() {
                   rows={5} placeholder="Describe your situation and why you believe this was a mistake…"
                   style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', color: 'var(--text)', fontSize: 14, resize: 'vertical', lineHeight: 1.6 }}
                 />
-                {error && <div style={{ color: '#ef4444', fontSize: 13 }}>{error}</div>}
+                {error && <div style={{ color: '#ef4444', fontSize: 14 }}>{error}</div>}
                 <button onClick={submitAppeal} disabled={loading} style={{
                   padding: '10px 20px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff',
                   cursor: 'pointer', fontSize: 14, fontWeight: 600, opacity: loading ? 0.6 : 1,
@@ -158,7 +158,7 @@ export default function AccountStatus() {
 
         {/* Sign out */}
         <div style={{ textAlign: 'center', marginTop: 20 }}>
-          <button onClick={logout} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>
+          <button onClick={logout} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 14, textDecoration: 'underline' }}>
             Sign out
           </button>
         </div>

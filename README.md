@@ -61,12 +61,11 @@ the main process. The interface only ever sees short-lived access tokens.
 
 ### Coming from ArcJournal 1.x
 
-Coming from ArcJournal 1.x? Your account keeps working. Either:
-
-- choose **Sign in with your ArcJournal 1.x password**. The app offers to connect an Arcnode
-  account (or later, from Settings). Your password keeps working until you do, and stops
-  working once you have.
-- or sign in with Arcnode and choose **Used ArcJournal before? Bring your old journal**.
+ArcJournal signs in with an Arcnode account only; your 1.x password no longer signs in. To
+bring your 1.x journal along, sign in with Arcnode (or create an Arcnode account first), then
+choose **Used ArcJournal before? Bring your old journal**, on the welcome screen or later in
+Settings. Enter your old email or username and password once: your entries, settings and
+standing move into your Arcnode account, and the old account is closed.
 
 When you set your passphrase, your 1.x entries are encrypted. First the app saves a full
 unencrypted backup to `Documents/ArcJournal backups`, and then, on your computer, it checks that
@@ -142,7 +141,7 @@ VITE_DEV_BRIDGE=1 VITE_API_URL=http://localhost:8080 npm --prefix client run dev
 ```
 
 The dev API seeds a 1.x account (`legacy@example.com`, password `legacy-password`) to try
-linking and the encryption of old entries.
+**Bring your old journal** and the encryption of old entries.
 
 ## Build and release
 

@@ -28,7 +28,7 @@ const GENDERS = [
 const TOTAL_STEPS = 4;
 
 export default function Onboarding() {
-  const { user, session, refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -94,7 +94,7 @@ export default function Onboarding() {
         pointerEvents: 'none',
       }} />
 
-      <div className="fade-in" style={{ width: '100%', maxWidth: 500 }}>
+      <div className="fade-in" style={{ width: '100%', maxWidth: 560 }}>
         {/* Progress bar */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
@@ -112,7 +112,7 @@ export default function Onboarding() {
               />
             ))}
           </div>
-          <p style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}>
+          <p style={{ fontSize: 12, color: 'var(--muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}>
             STEP {step} OF {TOTAL_STEPS}
           </p>
         </div>
@@ -122,9 +122,9 @@ export default function Onboarding() {
           {step === 1 && (
             <>
               <StepWelcome name={user?.displayName} onNext={next} />
-              {session === 'arcnode' && <div style={{ marginTop: 20 }}>
+              <div style={{ marginTop: 20 }}>
                 <LegacyLinkCard onLinked={(u) => setForm((f) => ({ ...f, displayName: u.displayName || f.displayName }))} />
-              </div>}
+              </div>
             </>
           )}
 
@@ -163,7 +163,7 @@ export default function Onboarding() {
           )}
         </div>
 
-        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 11, color: 'var(--muted)', opacity: 0.45, letterSpacing: '0.05em' }}>
+        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 12, color: 'var(--muted)', opacity: 0.8, letterSpacing: '0.05em' }}>
           Part of Arcnode
         </p>
       </div>
@@ -180,7 +180,7 @@ function StepWelcome({ name, onNext }) {
       <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 800, marginBottom: 10, letterSpacing: '-0.02em' }}>
         Welcome to <span style={{ color: 'var(--accent)' }}>ArcJournal</span>
       </h1>
-      <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.7, marginBottom: 32, maxWidth: 360, margin: '0 auto 32px' }}>
+      <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.7, marginBottom: 32, maxWidth: 420, margin: '0 auto 32px' }}>
         Hey{name && <> <strong style={{ color: 'var(--text)' }}>{name}</strong></>}! Before you start journaling,
         let's personalize your experience. It'll only take a moment.
       </p>
@@ -195,7 +195,7 @@ function StepWelcome({ name, onNext }) {
         ].map(({ icon, text }) => (
           <div key={text} style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 28, marginBottom: 4 }}>{icon}</div>
-            <span style={{ fontSize: 12, color: 'var(--muted)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>{text}</span>
+            <span style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>{text}</span>
           </div>
         ))}
       </div>
@@ -228,7 +228,7 @@ function StepName({ value, onChange, onNext, onBack }) {
           style={{ fontSize: 18, fontFamily: 'var(--font-display)', fontWeight: 600 }}
         />
         {value && (
-          <p style={{ marginTop: 10, fontSize: 13, color: 'var(--accent)' }}>
+          <p style={{ marginTop: 10, fontSize: 14, color: 'var(--accent)' }}>
             ✓ Hi, {value}! That's a great name.
           </p>
         )}
@@ -265,7 +265,7 @@ function StepProfile({ form, onChange, onNext, onBack }) {
             style={{ colorScheme: 'dark' }}
           />
           {form.dateOfBirth && (
-            <p style={{ marginTop: 6, fontSize: 12, color: 'var(--muted)' }}>
+            <p style={{ marginTop: 6, fontSize: 13, color: 'var(--muted)' }}>
               🎂 We'll wish you a happy birthday!
             </p>
           )}
@@ -287,7 +287,7 @@ function StepProfile({ form, onChange, onNext, onBack }) {
                   color: form.gender === value ? 'var(--accent)' : 'var(--muted)',
                   fontFamily: 'var(--font-display)',
                   fontWeight: 600,
-                  fontSize: 13,
+                  fontSize: 14,
                   cursor: 'pointer',
                   transition: 'all 0.15s',
                   textAlign: 'center',
@@ -336,7 +336,7 @@ function StepGoals({ goals, onToggle, onFinish, onBack, saving }) {
                 color: selected ? 'var(--accent)' : 'var(--muted)',
                 fontFamily: 'var(--font-display)',
                 fontWeight: 600,
-                fontSize: 13,
+                fontSize: 14,
                 cursor: 'pointer',
                 transition: 'all 0.15s',
                 display: 'flex',

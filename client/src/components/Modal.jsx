@@ -17,7 +17,7 @@ export default function Modal({ isOpen, title, message, confirmLabel = 'Confirm'
     >
       <div
         className="card fade-in"
-        style={{ width: '100%', maxWidth: 420, boxShadow: '0 8px 48px rgba(0,0,0,0.6)' }}
+        style={{ width: '100%', maxWidth: 480, boxShadow: '0 8px 48px rgba(0,0,0,0.6)' }}
         onClick={(e) => e.stopPropagation()}
       >
         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, marginBottom: 12 }}>

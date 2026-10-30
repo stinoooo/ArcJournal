@@ -44,7 +44,7 @@ export default function WarningModal({ warnings, onDismiss }) {
         <div style={{ padding: 28 }}>
           {/* Counter */}
           {warnings.length > 1 && (
-            <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 16, letterSpacing: '0.06em' }}>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16, letterSpacing: '0.06em' }}>
               WARNING {index + 1} OF {warnings.length}
             </div>
           )}
@@ -55,19 +55,19 @@ export default function WarningModal({ warnings, onDismiss }) {
               {sc.icon}
             </div>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: sc.color, letterSpacing: '0.1em', marginBottom: 4 }}>{sc.label.toUpperCase()}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: sc.color, letterSpacing: '0.1em', marginBottom: 4 }}>{sc.label.toUpperCase()}</div>
               <h2 style={{ margin: 0, fontSize: 17, fontFamily: 'var(--font-display)', lineHeight: 1.3 }}>{sc.title}</h2>
             </div>
           </div>
 
           {/* Reason */}
           <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: '14px 16px', marginBottom: 20 }}>
-            <div style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600, letterSpacing: '0.06em', marginBottom: 6 }}>REASON</div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, letterSpacing: '0.06em', marginBottom: 6 }}>REASON</div>
             <div style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.6 }}>{warning.reason}</div>
           </div>
 
           {/* Footer note */}
-          <p style={{ margin: '0 0 20px', fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
+          <p style={{ margin: '0 0 20px', fontSize: 14, color: 'var(--muted)', lineHeight: 1.6 }}>
             {warning.severity === 'severe'
               ? 'This is a serious violation. Further infractions may result in your account being suspended or terminated.'
               : warning.severity === 'warning'
@@ -76,7 +76,7 @@ export default function WarningModal({ warnings, onDismiss }) {
           </p>
 
           {/* Date */}
-          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 20 }}>
+          <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>
             Issued on {new Date(warning.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
           </div>
 

@@ -47,7 +47,7 @@ export default function LegacyLinkCard({ onLinked }) {
 
   return (
     <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16, border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>
-      <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>
+      <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.5 }}>
         Sign in with your old ArcJournal email or username and password, once. Your entries, settings and
         standing move into this Arcnode account and the old account is closed.
       </p>

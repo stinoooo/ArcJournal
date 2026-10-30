@@ -7,7 +7,7 @@ const Appeal = require('../models/Appeal');
 const auth = require('../middleware/auth');
 const { requireActive } = require('../middleware/auth');
 const { escapeRegex } = require('../lib/validate');
-const { mergeInto, linkToArcnode, LinkConflict } = require('../lib/legacy');
+const { mergeInto, LinkConflict } = require('../lib/legacy');
 const LegacyBackup = require('../models/LegacyBackup');
 
 router.use(auth);
@@ -83,13 +83,7 @@ const linkLimiter = rateLimit({
   message: { error: 'Too many attempts. Try again in 15 minutes.' },
 });
 
-function linkError(err, res) {
-  if (err instanceof LinkConflict) return res.status(409).json({ error: err.message, code: 'link_conflict' });
-  throw err;
-}
-
 router.post('/link-legacy', linkLimiter, async (req, res) => {
-  if (req.authKind !== 'arcnode') return res.status(400).json({ error: 'Sign in with Arcnode first' });
   const { identifier, password } = req.body;
   if (typeof identifier !== 'string' || !identifier.trim() || typeof password !== 'string' || !password) {
     return res.status(400).json({ error: 'Enter the email or username and password of your old account' });
@@ -107,29 +101,11 @@ router.post('/link-legacy', linkLimiter, async (req, res) => {
   try {
     user = await mergeInto(old, req.user);
   } catch (err) {
-    return linkError(err, res);
+    if (err instanceof LinkConflict) return res.status(409).json({ error: err.message, code: 'link_conflict' });
+    throw err;
   }
   const legacyEntries = await Entry.countDocuments({ userId: user._id, enc: { $exists: false } });
   res.json({ user, legacyEntries });
-});
-
-// POST /user/link-arcnode { accessToken }
-// The other direction: signed in with a 1.x password, the user approves
-// ArcJournal on arcnode.dev and the app sends that Arcnode access token here.
-// From then on the account signs in with Arcnode only and the password is removed.
-router.post('/link-arcnode', linkLimiter, async (req, res) => {
-  if (req.authKind !== 'password') return res.status(400).json({ error: 'This account is already linked to Arcnode' });
-  const { verifyToken, fetchProfile } = req.app.locals.auth;
-  const token = req.body?.accessToken;
-  const claims = typeof token === 'string' ? await verifyToken(token) : null;
-  if (!claims) return res.status(400).json({ error: 'Arcnode sign-in did not finish. Try again.' });
-  let user;
-  try {
-    user = await linkToArcnode(req.user, claims.sub, await fetchProfile(token).catch(() => null));
-  } catch (err) {
-    return linkError(err, res);
-  }
-  res.json({ user });
 });
 
 module.exports = router;

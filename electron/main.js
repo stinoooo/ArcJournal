@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, protocol, net, session, shell, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, nativeTheme, protocol, net, session, shell, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
@@ -54,8 +54,6 @@ function createWindow() {
     show: false,
     backgroundColor: '#0B1020',
     title: 'ArcJournal',
-    // macOS keeps its own traffic lights; Windows and Linux use the app's title bar.
-    ...(isMac ? { titleBarStyle: 'hiddenInset' } : { frame: false }),
     ...(process.platform === 'linux' ? { icon: path.join(__dirname, '..', 'assets', 'icons', '512x512.png') } : {}),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -161,10 +159,6 @@ function handle(channel, fn) {
 }
 
 handle('auth-sign-in', () => auth.signIn());
-handle('auth-link-start', () => auth.signIn({ link: true }));
-handle('auth-link-finish', () => auth.finishLink());
-handle('auth-link-discard', () => auth.discardLink());
-handle('auth-password-session', (_e, token) => auth.setPasswordSession(token));
 handle('auth-cancel', () => auth.cancel());
 handle('auth-sign-out', () => auth.signOut());
 handle('auth-signed-in', () => auth.isSignedIn());
@@ -175,13 +169,6 @@ ipcMain.on('vault-can-remember', (event) => { event.returnValue = fromApp(event)
 handle('vault-remember', (_e, userId, payload) => { if (secrets.isStrong()) secrets.write(vaultSecret(userId), String(payload)); });
 handle('vault-recall', (_e, userId) => secrets.read(vaultSecret(userId)));
 handle('vault-forget', (_e, userId) => secrets.remove(vaultSecret(userId)));
-
-handle('window-minimize', (e) => BrowserWindow.fromWebContents(e.sender)?.minimize());
-handle('window-maximize', (e) => {
-  const win = BrowserWindow.fromWebContents(e.sender);
-  if (win?.isMaximized()) win.unmaximize(); else win?.maximize();
-});
-handle('window-close', (e) => BrowserWindow.fromWebContents(e.sender)?.close());
 
 // Before encrypting a 1.x journal, the app saves a full plaintext export here.
 const backupDir = () => path.join(app.getPath('documents'), 'ArcJournal backups');
@@ -213,8 +200,12 @@ app.on('second-instance', () => {
 });
 
 app.whenReady().then(() => {
+  // The app is dark, so the native window frame is too (Windows and Linux title bars).
+  nativeTheme.themeSource = 'dark';
   // 1.x kept its password session here.
   fs.rmSync(path.join(app.getPath('userData'), 'session.bin'), { force: true });
+  // 2.0.0 and 2.0.1 kept the password session of unlinked 1.x accounts here.
+  secrets.remove('password-session');
   serveApp();
   lockDownSession();
   buildMenu();

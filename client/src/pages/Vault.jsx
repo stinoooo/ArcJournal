@@ -12,17 +12,17 @@ const heading = { fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 7
 const lead = { color: 'var(--muted)', fontSize: 14, marginBottom: 24, lineHeight: 1.5 };
 const form = { display: 'flex', flexDirection: 'column', gap: 16 };
 const wide = { width: '100%', justifyContent: 'center' };
-const linkButton = { background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: 13, padding: 0 };
+const linkButton = { background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: 14, padding: 0 };
 
 function KeepUnlocked({ checked, onChange }) {
   const { canRemember } = useVault();
   if (!canRemember) return null;
   return (
-    <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', textTransform: 'none', letterSpacing: 0, fontWeight: 400, fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}>
+    <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', textTransform: 'none', letterSpacing: 0, fontWeight: 400, fontSize: 14, color: 'var(--text)', cursor: 'pointer' }}>
       <input type="checkbox" aria-label="Keep my journal unlocked on this computer" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ width: 'auto', marginTop: 2 }} />
       <span>
         Keep my journal unlocked on this computer
-        <span style={{ display: 'block', color: 'var(--muted)', fontSize: 12, marginTop: 2 }}>
+        <span style={{ display: 'block', color: 'var(--muted)', fontSize: 13, marginTop: 2 }}>
           The key is stored in your system keychain. Anyone using this account on this computer can read your journal.
         </span>
       </span>
@@ -36,7 +36,7 @@ export function PassphraseFields({ value, confirm, onValue, onConfirm, label = '
       <div>
         <label htmlFor="passphrase">{label}</label>
         <input id="passphrase" type="password" value={value} onChange={(e) => onValue(e.target.value)} autoComplete="new-password" autoFocus />
-        <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>
+        <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>
           At least {MIN_PASSPHRASE} characters. A few unrelated words are easy to remember and hard to guess.
         </p>
       </div>
@@ -125,7 +125,7 @@ function Setup() {
         </p>
         <div style={form}>
           <RecoveryKeyCard recoveryKey={created.recoveryKey} />
-          <label style={{ display: 'flex', gap: 10, alignItems: 'center', textTransform: 'none', letterSpacing: 0, fontWeight: 400, fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}>
+          <label style={{ display: 'flex', gap: 10, alignItems: 'center', textTransform: 'none', letterSpacing: 0, fontWeight: 400, fontSize: 14, color: 'var(--text)', cursor: 'pointer' }}>
             <input type="checkbox" aria-label="I saved my recovery key somewhere safe" checked={saved} onChange={(e) => setSaved(e.target.checked)} style={{ width: 'auto' }} />
             I saved my recovery key somewhere safe
           </label>
@@ -143,7 +143,7 @@ function Setup() {
         Nobody else, not even Arcnode, can read your journal or reset this passphrase.
       </p>
       {legacyCount > 0 && (
-        <p style={{ ...lead, marginTop: -12, padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: 13 }}>
+        <p style={{ ...lead, marginTop: -12, padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: 14 }}>
           Your {legacyCount} existing {legacyCount === 1 ? 'entry is' : 'entries are'} encrypted right after this. First, a full
           unencrypted backup is saved to <strong style={{ color: 'var(--text)' }}>Documents/ArcJournal backups</strong> on this computer,
           and every entry is checked after encrypting before its old copy is replaced.

@@ -110,7 +110,7 @@ function ColorPopup({ items, onPick, onClose }) {
             border: value ? '1px solid rgba(255,255,255,0.15)' : '1.5px dashed var(--muted)',
             background: value || 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 10, color: 'var(--muted)',
+            fontSize: 12, color: 'var(--muted)',
           }}
         >
           {!value && '×'}
@@ -262,10 +262,10 @@ const RichEditor = forwardRef(function RichEditor(
           {/* Headings */}
           <TBtn title="H1" active={editor.isActive('heading', { level: 1 })}
             onMouseDown={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:11 }}>H1</TBtn>
+            style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:12 }}>H1</TBtn>
           <TBtn title="H2" active={editor.isActive('heading', { level: 2 })}
             onMouseDown={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:11 }}>H2</TBtn>
+            style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:12 }}>H2</TBtn>
           <Sep />
 
           {/* Inline */}
@@ -283,7 +283,7 @@ const RichEditor = forwardRef(function RichEditor(
             style={{ textDecoration: 'line-through' }}>S</TBtn>
           <TBtn title="Code" active={editor.isActive('code')}
             onMouseDown={() => editor.chain().focus().toggleCode().run()}
-            style={{ fontFamily: 'monospace', fontSize: 11 }}>{'<>'}</TBtn>
+            style={{ fontFamily: 'monospace', fontSize: 12 }}>{'<>'}</TBtn>
           <Sep />
 
           {/* Align */}
@@ -308,7 +308,7 @@ const RichEditor = forwardRef(function RichEditor(
             <TBtn title="Text colour" active={showTextColors}
               onMouseDown={() => { setShowTextColors(v => !v); setShowHighlights(false); }}>
               <span style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:1 }}>
-                <span style={{ fontWeight:700, fontSize:12 }}>A</span>
+                <span style={{ fontWeight:700, fontSize:13 }}>A</span>
                 <span style={{ width:12, height:2, borderRadius:1, background: activeColor || 'var(--text)', display:'block' }} />
               </span>
             </TBtn>
@@ -322,7 +322,7 @@ const RichEditor = forwardRef(function RichEditor(
             <TBtn title="Highlight" active={showHighlights || editor.isActive('highlight')}
               onMouseDown={() => { setShowHighlights(v => !v); setShowTextColors(false); }}>
               <span style={{ background: activeHighlight || 'transparent', padding:'0 3px', borderRadius:2,
-                border: activeHighlight ? 'none' : '1px solid var(--muted)', fontSize:11 }}>ab</span>
+                border: activeHighlight ? 'none' : '1px solid var(--muted)', fontSize:12 }}>ab</span>
             </TBtn>
             {showHighlights && (
               <ColorPopup items={HIGHLIGHTS} onPick={applyHighlight} onClose={() => setShowHighlights(false)} />
@@ -351,7 +351,7 @@ const RichEditor = forwardRef(function RichEditor(
           display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0,
         }}>
           {selectedText && (
-            <p style={{ fontSize: 11, color: '#FFD166', fontStyle: 'italic', opacity: 0.75 }}>
+            <p style={{ fontSize: 12, color: '#FFD166', fontStyle: 'italic', opacity: 0.75 }}>
               "…{selectedText.slice(0, 60)}{selectedText.length > 60 ? '…' : ''}"
             </p>
           )}
@@ -360,11 +360,11 @@ const RichEditor = forwardRef(function RichEditor(
               onChange={e => setCommentDraft(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') submitComment(); if (e.key === 'Escape') setShowCommentInput(false); }}
               autoFocus
-              style={{ flex: 1, padding: '7px 12px', fontSize: 13, background: 'var(--surface2)' }} />
+              style={{ flex: 1, padding: '7px 12px', fontSize: 14, background: 'var(--surface2)' }} />
             <button className="btn btn-primary" onMouseDown={e => { e.preventDefault(); submitComment(); }}
-              style={{ padding: '7px 14px', fontSize: 12 }}>Add</button>
+              style={{ padding: '7px 14px', fontSize: 13 }}>Add</button>
             <button className="btn btn-ghost" onMouseDown={e => { e.preventDefault(); setShowCommentInput(false); }}
-              style={{ padding: '7px 10px', fontSize: 12 }}>✕</button>
+              style={{ padding: '7px 10px', fontSize: 13 }}>✕</button>
           </div>
         </div>
       )}
