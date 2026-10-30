@@ -1,5 +1,35 @@
 # Changelog
 
+## 2.0.1
+
+### Fixed
+
+- ArcJournal 1.x apps now show "This version is no longer supported, download the latest version"
+  instead of "Sign in failed" or "Your session expired".
+- Deleting an entry also deletes its server-side safety copy, and a rejected migration no longer
+  leaves one behind.
+- Editing a 1.x entry before it was migrated keeps its saved versions.
+
+### Security
+
+- macOS and Linux updates are installed only when the release's checksums carry a valid
+  signature from the ArcJournal release key built into the app, and each download is checked
+  again right before it is installed.
+- Electron fuses: no running as plain Node, no NODE_OPTIONS or inspect flags, and the app only
+  loads from its own integrity-checked archive.
+- Exact origin checks for navigation and IPC, a redirect guard and a permission check handler.
+- Without an OS keychain, the sign-in token is kept in memory instead of written to disk.
+- Sign-in checks that the response came from Arcnode, password sign-in takes the same time
+  whether or not an account exists, and the editor no longer uses `innerHTML` to read entries.
+- Updated editor dependencies, including a fix for a paste XSS in ProseMirror.
+
+### Changed
+
+- The packages no longer include a MongoDB binary used only by the tests, so they are smaller.
+- The docs say plainly that 1.x entries keep a plaintext safety copy on the server for 90 days
+  after they are encrypted, that macOS 13 is the minimum, and that the Windows installer is not
+  code-signed.
+
 ## 2.0.0
 
 A rebuild of ArcJournal around privacy and a proper desktop app.
@@ -7,8 +37,9 @@ A rebuild of ArcJournal around privacy and a proper desktop app.
 ### New
 
 - **End-to-end encryption.** Entries, versions and attachments are encrypted on your computer
-  with AES-256-GCM. Choose a passphrase and save a recovery key; the server only stores
-  ciphertext.
+  with AES-256-GCM. Choose a passphrase and save a recovery key; the server stores what you write
+  in 2.0 only as ciphertext. 1.x entries stay plaintext until you open them in 2.0, and the server
+  keeps a plaintext safety copy of each for 90 days after it is encrypted.
 - **Sign in with your Arcnode account**, in your browser, with passkeys and two-factor
   authentication. New accounts are made on arcnode.dev.
 - **Your 1.x account keeps working**: sign in with your password and connect an Arcnode
@@ -16,7 +47,7 @@ A rebuild of ArcJournal around privacy and a proper desktop app.
 - **Your 1.x journal is encrypted safely**: a full backup is saved on your computer first,
   every entry is checked after encrypting, and an interrupted migration picks up where it
   stopped.
-- **macOS and Linux.** A universal macOS app (Apple silicon and Intel) and `.deb`, `.rpm` and
+- **macOS and Linux.** A universal macOS app (macOS 13 or later, Apple silicon and Intel) and `.deb`, `.rpm` and
   `.zip` packages for Linux, next to the Windows installer.
 - **Automatic updates on every platform.** New versions download in the background and are
   checked against the release's checksums; restart to update. Linux packages install through
