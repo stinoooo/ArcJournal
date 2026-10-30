@@ -42,3 +42,22 @@ jobs:
       - run: npx electron-forge publish ${{ matrix.args }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  checksums:
+    name: Checksums
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      # The app's updater on macOS and Linux only installs a download whose
+      # SHA-256 matches this file.
+      - name: Add SHA256SUMS to the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          mkdir assets && cd assets
+          gh release download "$GITHUB_REF_NAME" --pattern '*'
+          rm -f SHA256SUMS
+          sha256sum * > SHA256SUMS
+          cat SHA256SUMS
+          gh release upload "$GITHUB_REF_NAME" SHA256SUMS --clobber

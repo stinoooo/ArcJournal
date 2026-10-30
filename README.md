@@ -84,7 +84,15 @@ or the [releases](https://github.com/stinoooo/ArcJournal/releases).
 | Fedora, openSUSE | `arcjournal-<version>-1.x86_64.rpm` | `sudo dnf install ./arcjournal-*.rpm` |
 | Other Linux | `ArcJournal-linux-x64-<version>.zip` | Unzip and run `arcjournal`. |
 
-On macOS and Linux the app tells you when a new version is out and opens the download page.
+ArcJournal updates itself. New versions download in the background, and a banner offers to
+restart into them:
+
+- **Windows**: Squirrel installs the update when you restart.
+- **macOS** and the **Linux zip**: the app checks the download against the release's `SHA256SUMS`,
+  then replaces itself after it quits and opens again. The app has to sit in a folder you can
+  write to (it does in Applications).
+- **.deb and .rpm**: the new package is checked the same way and installed through your
+  system's password prompt (pkexec).
 
 ## Project layout
 

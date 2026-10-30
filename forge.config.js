@@ -15,6 +15,7 @@ module.exports = {
     // Only what the app runs: Electron code and the built UI.
     ignore: (file) => {
       if (!file) return false;
+      if (file.endsWith('.test.js')) return true;
       return !/^\/(electron|client$|client\/dist|package\.json$|node_modules)/.test(file);
     },
   },

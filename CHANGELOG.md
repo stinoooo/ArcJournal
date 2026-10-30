@@ -18,8 +18,9 @@ A rebuild of ArcJournal around privacy and a proper desktop app.
   stopped.
 - **macOS and Linux.** A universal macOS app (Apple silicon and Intel) and `.deb`, `.rpm` and
   `.zip` packages for Linux, next to the Windows installer.
-- **Updates that work.** Windows updates in the background; macOS and Linux show when a new
-  version is out.
+- **Automatic updates on every platform.** New versions download in the background and are
+  checked against the release's checksums; restart to update. Linux packages install through
+  the system password prompt.
 - Keep the journal unlocked on a computer you trust, using the system keychain.
 - Lock your journal from the sidebar; change your passphrase or recovery key in Settings.
 - A proper macOS menu with copy, paste and zoom, and the native window buttons.

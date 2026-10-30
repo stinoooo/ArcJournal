@@ -84,9 +84,14 @@ does not use it, so do not store it.
    draft release.
 5. Check the draft, then publish it.
 
-Windows installs pick the update up from
-[update.electronjs.org](https://github.com/electron/update.electronjs.org), which reads the
-published GitHub releases. macOS and Linux builds show a banner that opens the release page.
+Updates are automatic once a release is published:
+
+- Windows picks it up from [update.electronjs.org](https://github.com/electron/update.electronjs.org),
+  which reads the published GitHub releases.
+- macOS and Linux read the latest release from the GitHub API, download the file for their kind of
+  install (universal zip, Linux zip, `.deb` or `.rpm`), and only apply it when its SHA-256 matches
+  `SHA256SUMS`, which the release workflow adds after the builds. A release without `SHA256SUMS`
+  is offered as a download link instead. See [`electron/updates.js`](electron/updates.js).
 
 The arcnode.dev downloads page resolves the latest release itself through
 `/api/download/arcjournal`.
@@ -94,5 +99,5 @@ The arcnode.dev downloads page resolves the latest release itself through
 ### macOS signing
 
 The macOS build is not signed or notarized yet, so Gatekeeper asks for confirmation on the
-first launch and automatic updates are not possible there. Signing needs an Apple Developer
+first launch. Squirrel.Mac needs a signed app, so ArcJournal updates itself on macOS instead. Signing needs an Apple Developer
 account; Forge's `osxSign` and `osxNotarize` options in `forge.config.js` take it from there.

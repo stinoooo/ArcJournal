@@ -29,7 +29,7 @@
     "postinstall": "npm --prefix client install && npm --prefix server install",
     "dev": "concurrently -k -n api,ui,app \"npm --prefix server run dev\" \"npm --prefix client run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
     "build": "npm --prefix client run build",
-    "test": "npm --prefix server test && npm --prefix client test",
+    "test": "node --test \"electron/*.test.js\" && npm --prefix server test && npm --prefix client test",
     "icons": "node tools/make-icons.mjs",
     "package": "npm run build && electron-forge package",
     "make": "npm run build && electron-forge make",
