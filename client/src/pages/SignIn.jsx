@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { errorMessage } from '../api';
 import Spinner from '../components/Spinner';
 import CenteredCard, { ErrorNote } from '../components/CenteredCard';
+import PasswordSignIn from '../components/PasswordSignIn';
 
 export default function SignIn() {
   const { signIn, offline, refreshUser } = useAuth();
@@ -52,6 +53,7 @@ export default function SignIn() {
             Cancel
           </button>
         )}
+        {!waiting && <PasswordSignIn />}
       </div>
 
       <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: 'var(--muted)' }}>

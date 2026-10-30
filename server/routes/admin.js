@@ -4,6 +4,7 @@ const Entry        = require('../models/Entry');
 const Appeal       = require('../models/Appeal');
 const Announcement = require('../models/Announcement');
 const Warning      = require('../models/Warning');
+const LegacyBackup = require('../models/LegacyBackup');
 const auth         = require('../middleware/auth');
 const adminAuth    = require('../middleware/adminAuth');
 const { escapeRegex } = require('../lib/validate');
@@ -250,7 +251,7 @@ router.delete('/users/:id', async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
     if (user.role === 'admin') return res.status(403).json({ error: 'Cannot delete an admin account' });
-    await Entry.deleteMany({ userId: user._id });
+    await Promise.all([Entry.deleteMany({ userId: user._id }), LegacyBackup.deleteMany({ userId: user._id })]);
     user.vault = null;
     user.statusHistory.push({ action: 'deleted', reason, note, by: req.user._id });
     user.status = 'deleted'; user.statusReason = reason||''; user.statusNote = note||''; user.statusExpiry = null;
@@ -268,6 +269,7 @@ router.delete('/users/:id/purge', async (req, res) => {
     if (user.role === 'admin') return res.status(403).json({ error: 'Cannot purge an admin account' });
     await Promise.all([
       Entry.deleteMany({ userId: user._id }),
+      LegacyBackup.deleteMany({ userId: user._id }),
       Appeal.deleteMany({ userId: user._id }),
       Warning.deleteMany({ userId: user._id }),
       User.findByIdAndDelete(user._id),

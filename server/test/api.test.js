@@ -8,6 +8,9 @@ const { createApp } = require('../app');
 const User = require('../models/User');
 const Entry = require('../models/Entry');
 const Warning = require('../models/Warning');
+const LegacyBackup = require('../models/LegacyBackup');
+
+process.env.JWT_SECRET = 'test-secret-for-password-sessions';
 
 // Tokens look like "valid:<sub>". Anything else is rejected, like a bad signature.
 const auth = {
@@ -59,10 +62,6 @@ test('first sign-in creates the account from the Arcnode profile', async () => {
   assert.equal(await User.countDocuments(), 1);
 });
 
-test('the 1.x password endpoints ask for an update', async () => {
-  const res = await request(app).post('/auth/login').send({ identifier: 'a', password: 'b' }).expect(426);
-  assert.equal(res.body.code, 'upgrade_required');
-});
 
 test('the vault is created once and replaced only on purpose', async () => {
   await request(app).put('/vault').set(as('alice')).send({ vault: { version: 1 } }).expect(400);
@@ -232,4 +231,107 @@ test('resetting the vault deletes the journal it protected', async () => {
   assert.equal(await Entry.countDocuments(), 0);
   const res = await request(app).get('/vault').set(as('alice')).expect(200);
   assert.equal(res.body.vault, null);
+});
+
+// ── 1.x accounts keep their password until they link ─────────
+
+const login = (identifier, password, client = 'arcjournal-2') =>
+  request(app).post('/auth/login').send({ identifier, password, client });
+
+test('unlinked 1.x accounts sign in with their password in 2.0', async () => {
+  const old = await legacyAccount();
+  await Entry.create({ userId: old._id, date: '2024-06-01', content: '<p>hi</p>' });
+
+  await login('oldname', 'wrong').expect(401);
+  await request(app).post('/auth/signup').send({}).expect(410);
+  const res = await login('OLD@example.com', 'correct horse').expect(200);
+  const session = { Authorization: `Bearer ${res.body.token}` };
+
+  const me = await request(app).get('/auth/me').set(session).expect(200);
+  assert.equal(me.body.session, 'password');
+  assert.equal(me.body.user.arcnodeId, undefined);
+  const list = await request(app).get('/entries').set(session).expect(200);
+  assert.equal(list.body.entries[0].legacy, true);
+  // Password sessions can also set up encryption and migrate.
+  await request(app).put('/vault').set(session).send({ vault: vault() }).expect(200);
+});
+
+test('tokens from 1.x apps are refused, so those apps are told to update', async () => {
+  const old = await legacyAccount();
+  const { SignJWT } = await import('jose');
+  const oldStyle = await new SignJWT({ userId: String(old._id) })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('30d')
+    .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+  await request(app).get('/auth/me').set('Authorization', `Bearer ${oldStyle}`).expect(401);
+  const res = await login('oldname', 'correct horse', null).expect(426);
+  assert.equal(res.body.code, 'upgrade_required');
+});
+
+test('linking from a password session moves the account to Arcnode and retires the password', async () => {
+  const old = await legacyAccount({ role: 'admin' });
+  const { body } = await login('oldname', 'correct horse').expect(200);
+  const session = { Authorization: `Bearer ${body.token}` };
+
+  await request(app).post('/user/link-arcnode').set(session).send({ accessToken: 'forged' }).expect(400);
+  const res = await request(app).post('/user/link-arcnode').set(session).send({ accessToken: 'valid:alice' }).expect(200);
+  assert.equal(String(res.body.user._id), String(old._id));
+  assert.equal(res.body.user.arcnodeId, 'alice');
+  assert.equal(res.body.user.role, 'admin');
+
+  const raw = await User.findById(old._id).lean();
+  assert.equal(raw.password, undefined);
+  // The password session and password sign-in stop working; Arcnode works.
+  await request(app).get('/auth/me').set(session).expect(401);
+  await login('oldname', 'correct horse').expect(401);
+  const me = await request(app).get('/auth/me').set(as('alice')).expect(200);
+  assert.equal(String(me.body.user._id), String(old._id));
+});
+
+test('linking into an Arcnode account that already uses ArcJournal merges the two', async () => {
+  await request(app).get('/auth/me').set(as('alice'));
+  const old = await legacyAccount();
+  await Entry.create({ userId: old._id, date: '2024-06-01', content: '<p>hi</p>' });
+  const { body } = await login('oldname', 'correct horse').expect(200);
+  const res = await request(app)
+    .post('/user/link-arcnode')
+    .set('Authorization', `Bearer ${body.token}`)
+    .send({ accessToken: 'valid:alice' })
+    .expect(200);
+  assert.equal(res.body.user.arcnodeId, 'alice');
+  assert.equal(await User.countDocuments({ _id: old._id }), 0);
+  assert.equal(await Entry.countDocuments({ userId: res.body.user._id }), 1);
+});
+
+test('two encrypted journals are never merged by accident', async () => {
+  await request(app).put('/vault').set(as('alice')).send({ vault: vault(1) }).expect(200);
+  await legacyAccount({ vault: { ...vault(5), updatedAt: new Date() } });
+  const res = await request(app)
+    .post('/user/link-legacy')
+    .set(as('alice'))
+    .send({ identifier: 'oldname', password: 'correct horse' })
+    .expect(409);
+  assert.equal(res.body.code, 'link_conflict');
+  assert.equal(await User.countDocuments({ username: 'oldname' }), 1);
+});
+
+test('the plaintext is snapshotted on the server before an entry is encrypted', async () => {
+  await request(app).get('/auth/me').set(as('alice'));
+  const alice = await User.findOne({ arcnodeId: 'alice' });
+  const original = await Entry.create({
+    userId: alice._id, date: '2025-01-02', title: 'Old', content: '<p>secret</p>', grade: 8,
+    attachments: [{ id: 'a1', name: 'x.txt', data: 'aGk=' }], versions: [{ content: '<p>older</p>' }],
+  });
+
+  await request(app).put(`/entries/${original._id}`).set(as('alice')).send({ body: blob(1) }).expect(200);
+  // A retried migration request must not overwrite the snapshot with ciphertext.
+  await request(app).put(`/entries/${original._id}`).set(as('alice')).send({ body: blob(2) }).expect(200);
+
+  const backup = await LegacyBackup.findOne({ entryId: original._id }).lean();
+  assert.equal(backup.entry.content, '<p>secret</p>');
+  assert.equal(backup.entry.attachments[0].data, 'aGk=');
+  assert.equal(backup.entry.versions[0].content, '<p>older</p>');
+
+  await request(app).post('/vault/reset').set(as('alice')).send({ confirm: 'DELETE MY JOURNAL' }).expect(200);
+  assert.equal(await LegacyBackup.countDocuments(), 0);
 });

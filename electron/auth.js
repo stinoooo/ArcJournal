@@ -18,12 +18,15 @@ const PORTS = arcnode.redirectPorts;
 const SCOPE = 'openid profile email';
 const SIGN_IN_TIMEOUT = 5 * 60 * 1000;
 const SESSION = 'arcnode-session';
+// ArcJournal 1.x accounts that are not linked yet sign in with their password.
+const PASSWORD_SESSION = 'password-session';
 
 const b64url = (buf) => buf.toString('base64url');
 
 let access = null; // { token, expiresAt }
 let refreshing = null;
 let pending = null; // the sign-in waiting for the browser
+let pendingLink = null; // tokens from linking, kept until the server confirms the link
 
 class AuthError extends Error {}
 
@@ -69,8 +72,12 @@ const page = (title, text) => `<!doctype html><html lang="en"><head><meta charse
 main{text-align:center;max-width:420px;padding:24px}h1{font-size:22px;margin:0 0 8px}p{color:#9AA6C2;margin:0}</style></head>
 <body><main><h1>${title}</h1><p>${text}</p></main></body></html>`;
 
-/** Opens the browser and resolves once the user approved ArcJournal. */
-async function signIn() {
+/**
+ * Opens the browser and resolves once the user approved ArcJournal.
+ * With { link: true } the Arcnode session is held back and the access token
+ * returned, so a password account can link first (see finishLink).
+ */
+async function signIn({ link = false } = {}) {
   if (!CLIENT_ID) throw new AuthError('This build of ArcJournal has no Arcnode client ID.');
   cancel();
 
@@ -81,12 +88,12 @@ async function signIn() {
   return new Promise((resolve, reject) => {
     const server = http.createServer();
     let redirectUri;
-    const finish = (err) => {
+    const finish = (err, result = true) => {
       clearTimeout(timer);
       server.close();
       pending = null;
       if (err) reject(err);
-      else resolve(true);
+      else resolve(result);
     };
     const timer = setTimeout(() => finish(new AuthError('Sign-in timed out. Try again.')), SIGN_IN_TIMEOUT);
     pending = { cancel: () => finish(new AuthError('Sign-in cancelled.')) };
@@ -109,9 +116,11 @@ async function signIn() {
         return;
       }
       try {
-        store(await tokenRequest({ grant_type: 'authorization_code', code, redirect_uri: redirectUri, code_verifier: verifier }));
+        const tokens = await tokenRequest({ grant_type: 'authorization_code', code, redirect_uri: redirectUri, code_verifier: verifier });
+        if (link) pendingLink = tokens;
+        else store(tokens);
         reply(200, 'You are signed in', 'You can close this tab and return to ArcJournal.');
-        finish();
+        finish(null, link ? tokens.access_token : true);
       } catch (err) {
         reply(500, 'Sign-in failed', 'Return to ArcJournal and try again.');
         finish(err);
@@ -141,11 +150,32 @@ function cancel() {
   pending?.cancel();
 }
 
-/** A valid access token, refreshed when it is about to expire. Null when signed out. */
+/** The server linked the password account: switch to the Arcnode session for good. */
+function finishLink() {
+  if (!pendingLink) throw new AuthError('Nothing to link.');
+  store(pendingLink);
+  pendingLink = null;
+  secrets.remove(PASSWORD_SESSION);
+}
+
+function discardLink() {
+  pendingLink = null;
+}
+
+function setPasswordSession(token) {
+  if (typeof token !== 'string' || token.length > 2048) throw new AuthError('Invalid session.');
+  signOut();
+  secrets.write(PASSWORD_SESSION, token);
+}
+
+/**
+ * A valid access token, refreshed when it is about to expire. For an unlinked
+ * 1.x account this is its password session. Null when signed out.
+ */
 async function getAccessToken() {
   if (access && access.expiresAt - Date.now() > 60_000) return access.token;
   const refreshToken = secrets.read(SESSION);
-  if (!refreshToken) return null;
+  if (!refreshToken) return secrets.read(PASSWORD_SESSION);
   // Refresh tokens rotate, so concurrent requests share one refresh.
   refreshing ??= tokenRequest({ grant_type: 'refresh_token', refresh_token: refreshToken })
     .then((tokens) => { store(tokens); return access.token; })
@@ -158,12 +188,14 @@ async function getAccessToken() {
 }
 
 function isSignedIn() {
-  return !!secrets.read(SESSION);
+  return !!secrets.read(SESSION) || !!secrets.read(PASSWORD_SESSION);
 }
 
 function signOut() {
   access = null;
+  pendingLink = null;
   secrets.remove(SESSION);
+  secrets.remove(PASSWORD_SESSION);
 }
 
-module.exports = { signIn, cancel, getAccessToken, isSignedIn, signOut };
+module.exports = { signIn, cancel, finishLink, discardLink, setPasswordSession, getAccessToken, isSignedIn, signOut };

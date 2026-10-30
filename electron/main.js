@@ -144,6 +144,10 @@ function handle(channel, fn) {
 }
 
 handle('auth-sign-in', () => auth.signIn());
+handle('auth-link-start', () => auth.signIn({ link: true }));
+handle('auth-link-finish', () => auth.finishLink());
+handle('auth-link-discard', () => auth.discardLink());
+handle('auth-password-session', (_e, token) => auth.setPasswordSession(token));
 handle('auth-cancel', () => auth.cancel());
 handle('auth-sign-out', () => auth.signOut());
 handle('auth-signed-in', () => auth.isSignedIn());
@@ -161,6 +165,23 @@ handle('window-maximize', (e) => {
   if (win?.isMaximized()) win.unmaximize(); else win?.maximize();
 });
 handle('window-close', (e) => BrowserWindow.fromWebContents(e.sender)?.close());
+
+// Before encrypting a 1.x journal, the app saves a full plaintext export here.
+const backupDir = () => path.join(app.getPath('documents'), 'ArcJournal backups');
+handle('backup-write', (_e, name, json) => {
+  const safe = String(name).replace(/[^a-z0-9 ._-]/gi, '_').slice(0, 120);
+  if (!safe.endsWith('.json')) throw new Error('Backups are JSON files');
+  fs.mkdirSync(backupDir(), { recursive: true });
+  const file = path.join(backupDir(), safe);
+  fs.writeFileSync(file, String(json), { mode: 0o600 });
+  // Read it back: the migration only starts once the backup is really on disk.
+  if (fs.readFileSync(file, 'utf8') !== String(json)) throw new Error('The backup could not be verified');
+  return file;
+});
+handle('backup-reveal', (_e, file) => {
+  const resolved = path.resolve(String(file));
+  if (resolved.startsWith(backupDir() + path.sep)) shell.showItemInFolder(resolved);
+});
 
 handle('app-version', () => app.getVersion());
 handle('update-check', () => updates.check());

@@ -37,6 +37,8 @@ export function errorMessage(err, fallback = 'Something went wrong. Try again.')
 
 export const authAPI = {
   me: () => api.get('/auth/me'),
+  // Password sign-in for ArcJournal 1.x accounts that are not linked to Arcnode yet.
+  login: (identifier, password) => api.post('/auth/login', { identifier, password, client: 'arcjournal-2' }),
 };
 
 export const vaultAPI = {
@@ -61,6 +63,7 @@ export const userAPI = {
   getProfile: () => api.get('/user/profile'),
   updateProfile: (data) => api.put('/user/profile', data),
   linkLegacy: (identifier, password) => api.post('/user/link-legacy', { identifier, password }),
+  linkArcnode: (accessToken) => api.post('/user/link-arcnode', { accessToken }),
 };
 
 export { entriesAPI, statsAPI } from '../lib/journal';

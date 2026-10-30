@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { userAPI, errorMessage } from '../api';
 import { useVault } from '../context/VaultContext';
 import LegacyLinkCard from '../components/LegacyLinkCard';
+import { LinkArcnodeButton } from '../components/LinkArcnode';
 import { PassphraseFields, passphraseProblem, RecoveryKeyCard } from './Vault';
 import { getUserAge } from '../utils/birthday';
 import Modal from '../components/Modal';
@@ -19,7 +20,7 @@ const GENDERS = [
 ];
 
 export default function Settings() {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, session, logout, refreshUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -181,6 +182,18 @@ export default function Settings() {
       {/* Account */}
       <section className="card" style={{ marginBottom: 24 }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Arcnode account</h2>
+        {session === 'password' ? (
+          <>
+            <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16, lineHeight: 1.5 }}>
+              You signed in with your ArcJournal 1.x password. Connect an Arcnode account to sign in with
+              passkeys and two-factor authentication; your password then stops working.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' }}>
+              <LinkArcnodeButton />
+              <button className="btn btn-ghost" onClick={async () => { await logout(); navigate('/signin'); }}>Sign out</button>
+            </div>
+          </>
+        ) : <>
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16, lineHeight: 1.5 }}>
           Signed in{user?.email ? <> as <strong style={{ color: 'var(--text)' }}>{user.email}</strong></> : ''}.
           Your email, password and two-factor settings live at{' '}
@@ -192,6 +205,7 @@ export default function Settings() {
             Sign out
           </button>
         </div>
+        </>}
       </section>
 
       {/* About */}

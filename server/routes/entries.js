@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const Entry = require('../models/Entry');
+const LegacyBackup = require('../models/LegacyBackup');
 const auth = require('../middleware/auth');
 const { requireActive } = require('../middleware/auth');
 const { isDate, isFutureDate, isSealed, sealed, MAX_BODY, MAX_FILES } = require('../lib/validate');
@@ -65,7 +66,13 @@ router.put('/:id', async (req, res) => {
   if (!entry) return res.status(404).json({ error: 'Entry not found' });
 
   if (!entry.enc) {
-    // Encrypting a legacy entry: drop every plaintext field and plaintext version.
+    // Encrypting a legacy entry. First keep a copy of the plaintext (see
+    // models/LegacyBackup.js), then drop every plaintext field and version.
+    await LegacyBackup.updateOne(
+      { entryId: entry._id },
+      { $setOnInsert: { userId: req.user._id, entryId: entry._id, entry: entry.toObject() } },
+      { upsert: true },
+    );
     const migrated = Array.isArray(versions) ? versions.slice(-MAX_VERSIONS) : [];
     if (!migrated.every((v) => isSealed(v?.body, MAX_BODY))) {
       return res.status(400).json({ error: 'Versions must be encrypted on your device' });

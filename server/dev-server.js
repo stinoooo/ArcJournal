@@ -30,6 +30,8 @@ async function seed() {
   ]);
 }
 
+process.env.JWT_SECRET ||= 'dev-only-secret';
+
 (async () => {
   const mongo = await MongoMemoryServer.create();
   await mongoose.connect(mongo.getUri());

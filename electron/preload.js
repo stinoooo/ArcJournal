@@ -12,6 +12,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     signOut: () => ipcRenderer.invoke('auth-sign-out'),
     isSignedIn: () => ipcRenderer.invoke('auth-signed-in'),
     getAccessToken: () => ipcRenderer.invoke('auth-access-token'),
+    // ArcJournal 1.x accounts: password sign-in until they link to Arcnode.
+    setPasswordSession: (token) => ipcRenderer.invoke('auth-password-session', token),
+    startLink: () => ipcRenderer.invoke('auth-link-start'),
+    finishLink: () => ipcRenderer.invoke('auth-link-finish'),
+    discardLink: () => ipcRenderer.invoke('auth-link-discard'),
   },
 
   vault: canRemember ? {
@@ -23,6 +28,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimize: () => ipcRenderer.invoke('window-minimize'),
   maximize: () => ipcRenderer.invoke('window-maximize'),
   close: () => ipcRenderer.invoke('window-close'),
+
+  backups: {
+    write: (name, json) => ipcRenderer.invoke('backup-write', name, json),
+    reveal: (file) => ipcRenderer.invoke('backup-reveal', file),
+  },
 
   getVersion: () => ipcRenderer.invoke('app-version'),
   updates: {

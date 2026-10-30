@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const Entry = require('../models/Entry');
+const LegacyBackup = require('../models/LegacyBackup');
 const auth = require('../middleware/auth');
 const { requireActive } = require('../middleware/auth');
 
@@ -53,7 +54,7 @@ router.put('/', async (req, res) => {
 // Nobody can decrypt the journal anymore, so it is deleted with the vault.
 router.post('/reset', async (req, res) => {
   if (req.body?.confirm !== 'DELETE MY JOURNAL') return res.status(400).json({ error: 'Confirmation required' });
-  await Entry.deleteMany({ userId: req.user._id });
+  await Promise.all([Entry.deleteMany({ userId: req.user._id }), LegacyBackup.deleteMany({ userId: req.user._id })]);
   req.user.vault = null;
   await req.user.save();
   res.json({ message: 'Journal deleted. Set up a new passphrase to start again.' });

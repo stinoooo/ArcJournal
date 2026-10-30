@@ -7,6 +7,8 @@ const Appeal = require('../models/Appeal');
 const auth = require('../middleware/auth');
 const { requireActive } = require('../middleware/auth');
 const { escapeRegex } = require('../lib/validate');
+const { mergeInto, linkToArcnode, LinkConflict } = require('../lib/legacy');
+const LegacyBackup = require('../models/LegacyBackup');
 
 router.use(auth);
 
@@ -51,7 +53,7 @@ router.put('/profile', requireActive, async (req, res) => {
 
 // DELETE /user/entries: delete every entry
 router.delete('/entries', requireActive, async (req, res) => {
-  await Entry.deleteMany({ userId: req.user._id });
+  await Promise.all([Entry.deleteMany({ userId: req.user._id }), LegacyBackup.deleteMany({ userId: req.user._id })]);
   res.json({ message: 'All entries deleted' });
 });
 
@@ -62,7 +64,9 @@ router.delete('/', async (req, res) => {
     return res.status(403).json({ error: 'Accounts under a moderation action cannot be deleted from the app. Contact support.' });
   }
   const userId = req.user._id;
-  await Promise.all([Entry.deleteMany({ userId }), Appeal.deleteMany({ userId }), Warning.deleteMany({ userId })]);
+  await Promise.all([
+    Entry.deleteMany({ userId }), Appeal.deleteMany({ userId }), Warning.deleteMany({ userId }), LegacyBackup.deleteMany({ userId }),
+  ]);
   await User.findByIdAndDelete(userId);
   res.json({ message: 'Account and all data deleted' });
 });
@@ -79,54 +83,53 @@ const linkLimiter = rateLimit({
   message: { error: 'Too many attempts. Try again in 15 minutes.' },
 });
 
+function linkError(err, res) {
+  if (err instanceof LinkConflict) return res.status(409).json({ error: err.message, code: 'link_conflict' });
+  throw err;
+}
+
 router.post('/link-legacy', linkLimiter, async (req, res) => {
+  if (req.authKind !== 'arcnode') return res.status(400).json({ error: 'Sign in with Arcnode first' });
   const { identifier, password } = req.body;
   if (typeof identifier !== 'string' || !identifier.trim() || typeof password !== 'string' || !password) {
     return res.status(400).json({ error: 'Enter the email or username and password of your old account' });
   }
   const id = identifier.trim().toLowerCase();
-  const legacy = await User.findOne({
+  const old = await User.findOne({
     arcnodeId: { $exists: false },
     password: { $exists: true },
     $or: [{ email: id }, { username: new RegExp(`^${escapeRegex(id)}$`, 'i') }],
   });
-  if (!legacy || !(await legacy.comparePassword(password))) {
+  if (!old || !(await old.comparePassword(password))) {
     return res.status(401).json({ error: 'That email or username and password do not match an old ArcJournal account' });
   }
-
-  const me = req.user;
-  await Promise.all([
-    Entry.updateMany({ userId: legacy._id }, { $set: { userId: me._id } }),
-    Warning.updateMany({ userId: legacy._id }, { $set: { userId: me._id } }),
-    Appeal.updateMany({ userId: legacy._id }, { $set: { userId: me._id } }),
-  ]);
-
-  if (legacy.role === 'admin') me.role = 'admin';
-  if (legacy.status !== 'active') {
-    me.status = legacy.status;
-    me.statusReason = legacy.statusReason;
-    me.statusNote = legacy.statusNote;
-    me.statusExpiry = legacy.statusExpiry;
+  let user;
+  try {
+    user = await mergeInto(old, req.user);
+  } catch (err) {
+    return linkError(err, res);
   }
-  me.statusHistory = [...legacy.statusHistory, ...me.statusHistory];
-  for (const key of ['displayName', 'dateOfBirth', 'gender']) {
-    if (!me[key] && legacy[key]) me[key] = legacy[key];
-  }
-  if (!me.journalingGoals?.length && legacy.journalingGoals?.length) me.journalingGoals = legacy.journalingGoals;
-  if (legacy.onboardingComplete) me.onboardingComplete = true;
-  if (!me.email && legacy.email) me.email = legacy.email;
-  await User.findByIdAndDelete(legacy._id);
-  await me.save();
-  // Keep "member since" from the first account. createdAt is immutable in
-  // Mongoose, so this goes straight to the collection.
-  if (legacy.createdAt < me.createdAt) {
-    await User.collection.updateOne({ _id: me._id }, { $set: { createdAt: legacy.createdAt } });
-  }
-  const [user, legacyEntries] = await Promise.all([
-    User.findById(me._id),
-    Entry.countDocuments({ userId: me._id, enc: { $exists: false } }),
-  ]);
+  const legacyEntries = await Entry.countDocuments({ userId: user._id, enc: { $exists: false } });
   res.json({ user, legacyEntries });
+});
+
+// POST /user/link-arcnode { accessToken }
+// The other direction: signed in with a 1.x password, the user approves
+// ArcJournal on arcnode.dev and the app sends that Arcnode access token here.
+// From then on the account signs in with Arcnode only and the password is removed.
+router.post('/link-arcnode', linkLimiter, async (req, res) => {
+  if (req.authKind !== 'password') return res.status(400).json({ error: 'This account is already linked to Arcnode' });
+  const { verifyToken, fetchProfile } = req.app.locals.auth;
+  const token = req.body?.accessToken;
+  const claims = typeof token === 'string' ? await verifyToken(token) : null;
+  if (!claims) return res.status(400).json({ error: 'Arcnode sign-in did not finish. Try again.' });
+  let user;
+  try {
+    user = await linkToArcnode(req.user, claims.sub, await fetchProfile(token).catch(() => null));
+  } catch (err) {
+    return linkError(err, res);
+  }
+  res.json({ user });
 });
 
 module.exports = router;

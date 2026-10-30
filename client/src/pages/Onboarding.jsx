@@ -28,7 +28,7 @@ const GENDERS = [
 const TOTAL_STEPS = 4;
 
 export default function Onboarding() {
-  const { user, refreshUser } = useAuth();
+  const { user, session, refreshUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -122,9 +122,9 @@ export default function Onboarding() {
           {step === 1 && (
             <>
               <StepWelcome name={user?.displayName} onNext={next} />
-              <div style={{ marginTop: 20 }}>
+              {session === 'arcnode' && <div style={{ marginTop: 20 }}>
                 <LegacyLinkCard onLinked={(u) => setForm((f) => ({ ...f, displayName: u.displayName || f.displayName }))} />
-              </div>
+              </div>}
             </>
           )}
 
