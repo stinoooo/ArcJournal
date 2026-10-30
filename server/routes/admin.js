@@ -1,12 +1,12 @@
 const router       = require('express').Router();
 const User         = require('../models/User');
 const Entry        = require('../models/Entry');
-const Wrap         = require('../models/Wrap');
 const Appeal       = require('../models/Appeal');
 const Announcement = require('../models/Announcement');
 const Warning      = require('../models/Warning');
 const auth         = require('../middleware/auth');
 const adminAuth    = require('../middleware/adminAuth');
+const { escapeRegex } = require('../lib/validate');
 
 router.use(auth, adminAuth);
 
@@ -80,23 +80,26 @@ router.get('/users', async (req, res) => {
     const { search = '', page = 1, limit = 20, status, role } = req.query;
     const query = {};
     if (search) {
+      const pattern = escapeRegex(String(search).slice(0, 100));
       query.$or = [
-        { username:    { $regex: search, $options: 'i' } },
-        { email:       { $regex: search, $options: 'i' } },
-        { displayName: { $regex: search, $options: 'i' } },
+        { username:    { $regex: pattern, $options: 'i' } },
+        { email:       { $regex: pattern, $options: 'i' } },
+        { displayName: { $regex: pattern, $options: 'i' } },
       ];
     }
     if (status) query.status = status;
     if (role)   query.role   = role;
 
+    const pageNum  = Math.max(1, Number(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, Number(limit) || 20));
     const total = await User.countDocuments(query);
     const users = await User.find(query)
       .select('-password')
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum);
 
-    res.json({ users, total, page: Number(page), pages: Math.ceil(total / limit) });
+    res.json({ users, total, page: pageNum, pages: Math.ceil(total / limitNum) });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch users' });
   }
@@ -118,59 +121,43 @@ router.get('/users/:id', async (req, res) => {
   }
 });
 
-// GET /admin/users/:id/stats — fetch full journal stats for a user
+// GET /admin/users/:id/stats: activity only. Journals are end-to-end
+// encrypted, so words, grades and moods are not visible to admins.
 router.get('/users/:id/stats', async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const entries = await Entry.find({ userId: user._id }).sort({ date: 1 }).lean();
-    if (entries.length === 0) return res.json({ stats: null });
+    const entries = await Entry.find({ userId: user._id }).select('date').sort({ date: 1 }).lean();
+    const warnings = await Warning.find({ userId: user._id }).sort({ createdAt: -1 });
+    if (entries.length === 0) return res.json({ stats: null, warnings });
 
-    function stripHtml(html = '') { return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
-    function countWords(text) { return text ? text.split(/\s+/).filter(Boolean).length : 0; }
+    const uniqueDates = [...new Set(entries.map(e => e.date))].sort();
 
-    const totalEntries  = entries.length;
-    const uniqueDates   = [...new Set(entries.map(e => e.date))];
-    const daysJournaled = uniqueDates.length;
-
-    let totalWords = 0;
-    for (const e of entries) totalWords += countWords(stripHtml(e.content));
-
-    const grades = entries.map(e => e.grade).filter(Boolean);
-    const avgGrade = grades.length ? Math.round((grades.reduce((a,b)=>a+b,0)/grades.length)*10)/10 : null;
-
-    const moodFreq = {};
-    for (const e of entries) if (e.emoji) moodFreq[e.emoji] = (moodFreq[e.emoji]||0)+1;
-    const topMood = Object.entries(moodFreq).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
-
-    const sortedDates = [...uniqueDates].sort();
     let longestStreak = 1, temp = 1, currentStreak = 0;
-    for (let i = 1; i < sortedDates.length; i++) {
-      const diff = (new Date(sortedDates[i]) - new Date(sortedDates[i-1])) / 86400000;
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const diff = (new Date(uniqueDates[i]) - new Date(uniqueDates[i-1])) / 86400000;
       if (diff === 1) { temp++; longestStreak = Math.max(longestStreak, temp); } else temp = 1;
     }
+    const dates = new Set(uniqueDates);
     const d = new Date(new Date().toISOString().split('T')[0]);
-    while (true) {
-      const ds = d.toISOString().split('T')[0];
-      if (uniqueDates.includes(ds)) { currentStreak++; d.setDate(d.getDate()-1); } else break;
-    }
+    while (dates.has(d.toISOString().split('T')[0])) { currentStreak++; d.setDate(d.getDate()-1); }
 
     const monthMap = {};
     for (const date of uniqueDates) { const k = date.slice(0,7); monthMap[k] = (monthMap[k]||0)+1; }
     const monthlyActivity = Object.entries(monthMap).sort(([a],[b])=>a.localeCompare(b)).map(([month,count])=>({month,count}));
 
-    const warnings = await Warning.find({ userId: user._id }).sort({ createdAt: -1 });
-
     res.json({
       stats: {
-        totalEntries, daysJournaled, totalWords,
-        avgGrade, topMood, moodFreq,
+        totalEntries: entries.length,
+        daysJournaled: uniqueDates.length,
+        totalWords: null, avgGrade: null, topMood: null, moodFreq: {},
         currentStreak, longestStreak,
-        firstEntryDate: entries[0]?.date || null,
-        lastEntryDate: entries[entries.length-1]?.date || null,
+        firstEntryDate: uniqueDates[0],
+        lastEntryDate: uniqueDates[uniqueDates.length-1],
         monthlyActivity,
         memberSince: user.createdAt,
+        encrypted: true,
       },
       warnings,
     });
@@ -250,7 +237,8 @@ router.get('/users/:id/warnings', async (req, res) => {
 // DELETE /admin/users/:id/warnings/:wid — rescind a warning
 router.delete('/users/:id/warnings/:wid', async (req, res) => {
   try {
-    await Warning.findByIdAndDelete(req.params.wid);
+    const warning = await Warning.findOneAndDelete({ _id: req.params.wid, userId: req.params.id });
+    if (!warning) return res.status(404).json({ error: 'Warning not found' });
     res.json({ message: 'Warning rescinded' });
   } catch (err) { res.status(500).json({ error: 'Failed to rescind warning' }); }
 });
@@ -262,7 +250,8 @@ router.delete('/users/:id', async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
     if (user.role === 'admin') return res.status(403).json({ error: 'Cannot delete an admin account' });
-    await Promise.all([ Entry.deleteMany({ userId: user._id }), Wrap.deleteMany({ userId: user._id }) ]);
+    await Entry.deleteMany({ userId: user._id });
+    user.vault = null;
     user.statusHistory.push({ action: 'deleted', reason, note, by: req.user._id });
     user.status = 'deleted'; user.statusReason = reason||''; user.statusNote = note||''; user.statusExpiry = null;
     user.displayName = 'Deleted User'; user.dateOfBirth = ''; user.journalingGoals = [];
@@ -279,7 +268,6 @@ router.delete('/users/:id/purge', async (req, res) => {
     if (user.role === 'admin') return res.status(403).json({ error: 'Cannot purge an admin account' });
     await Promise.all([
       Entry.deleteMany({ userId: user._id }),
-      Wrap.deleteMany({ userId: user._id }),
       Appeal.deleteMany({ userId: user._id }),
       Warning.deleteMany({ userId: user._id }),
       User.findByIdAndDelete(user._id),
