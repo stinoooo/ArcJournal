@@ -190,7 +190,7 @@ function StepWelcome({ name, onNext }) {
       }}>
         {[
           { icon: '📖', text: 'Daily entries' },
-          { icon: '✦', text: 'AI summaries' },
+          { icon: '🔒', text: 'End-to-end encrypted' },
           { icon: '🎂', text: 'Birthday tracking' },
         ].map(({ icon, text }) => (
           <div key={text} style={{ textAlign: 'center' }}>

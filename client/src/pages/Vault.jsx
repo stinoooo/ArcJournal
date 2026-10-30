@@ -19,7 +19,7 @@ function KeepUnlocked({ checked, onChange }) {
   if (!canRemember) return null;
   return (
     <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', textTransform: 'none', letterSpacing: 0, fontWeight: 400, fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ width: 'auto', marginTop: 2 }} />
+      <input type="checkbox" aria-label="Keep my journal unlocked on this computer" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ width: 'auto', marginTop: 2 }} />
       <span>
         Keep my journal unlocked on this computer
         <span style={{ display: 'block', color: 'var(--muted)', fontSize: 12, marginTop: 2 }}>
@@ -119,7 +119,7 @@ function Setup() {
         <div style={form}>
           <RecoveryKeyCard recoveryKey={created.recoveryKey} />
           <label style={{ display: 'flex', gap: 10, alignItems: 'center', textTransform: 'none', letterSpacing: 0, fontWeight: 400, fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}>
-            <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} style={{ width: 'auto' }} />
+            <input type="checkbox" aria-label="I saved my recovery key somewhere safe" checked={saved} onChange={(e) => setSaved(e.target.checked)} style={{ width: 'auto' }} />
             I saved my recovery key somewhere safe
           </label>
           <button className="btn btn-primary" disabled={!saved} onClick={created.finish} style={wide}>Open my journal</button>

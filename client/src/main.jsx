@@ -10,6 +10,9 @@ import '@fontsource-variable/dm-sans/wght-italic.css';
 import App from './App';
 import './styles/global.css';
 
+// Browser-only development against server/dev-server.js. Stripped from builds.
+if (import.meta.env.DEV && import.meta.env.VITE_DEV_BRIDGE === '1') await import('./dev/browserBridge');
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />

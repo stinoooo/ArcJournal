@@ -383,7 +383,7 @@ export default function ArcStats() {
             )}
 
             <p style={{ fontSize:10, color:'var(--muted)', opacity:0.3, textAlign:'center', letterSpacing:'0.08em', paddingBottom:8 }}>
-              ARCJOURNAL — PART OF THE ARCNODE NETWORK
+              ARCJOURNAL · PART OF ARCNODE
             </p>
           </>
         )}
