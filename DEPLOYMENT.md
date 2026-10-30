@@ -6,7 +6,7 @@ The API is the `ArcJournal` service in the Arcnode project on Railway (region
 `europe-west4`), with the `ArcJournal MongoDB` service next to it. It deploys from `main`
 at [arcjournal-production.up.railway.app](https://arcjournal-production.up.railway.app/health).
 
-[`railway.json`](railway.json) installs only `server/` (the desktop tooling at the root is
+[`railway.json`](railway.json) builds with `npm ci --prefix server --omit=dev` (the desktop tooling at the root is
 not needed there), starts `node server/index.js` and waits for `/health`. Railway reads the
 Node.js version from `engines` in the root `package.json`.
 
