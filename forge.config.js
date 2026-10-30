@@ -1,6 +1,20 @@
 const path = require('path');
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
-const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+const { FuseV1Options, FuseVersion, flipFuses } = require('@electron/fuses');
+
+// Turn off Electron features ArcJournal never uses, so a local attacker cannot
+// run the app as plain Node or load code from outside its asar.
+const FUSES = {
+  version: FuseVersion.V1,
+  [FuseV1Options.RunAsNode]: false,
+  [FuseV1Options.EnableCookieEncryption]: true,
+  [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
+  [FuseV1Options.EnableNodeCliInspectArguments]: false,
+  [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+  [FuseV1Options.OnlyLoadAppFromAsar]: true,
+  // The UI loads from app://, not file://.
+  [FuseV1Options.GrantFileProtocolExtraPrivileges]: false,
+};
 const { version } = require('./package.json');
 
 const icons = path.join(__dirname, 'assets', 'icons');
@@ -70,21 +84,19 @@ module.exports = {
       },
     },
   ],
-  plugins: [
-    // Turn off Electron features ArcJournal never uses, so a local attacker
-    // cannot run the app as plain Node or load code from outside its asar.
-    new FusesPlugin({
-      version: FuseVersion.V1,
-      [FuseV1Options.RunAsNode]: false,
-      [FuseV1Options.EnableCookieEncryption]: true,
-      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
-      [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: true,
-      // The UI loads from app://, not file://.
-      [FuseV1Options.GrantFileProtocolExtraPrivileges]: false,
-    }),
-  ],
+  // Windows and Linux get the fuses per build. macOS builds are stitched into
+  // one universal app first, and flipping fuses re-signs the arm64 half, which
+  // breaks the stitch; so on macOS the fuses are flipped once afterwards.
+  plugins: process.platform === 'darwin' ? [] : [new FusesPlugin(FUSES)],
+  hooks: {
+    async postPackage(_config, { platform, outputPaths }) {
+      if (platform !== 'darwin') return;
+      for (const dir of outputPaths) {
+        const app = require('fs').readdirSync(dir).find((f) => f.endsWith('.app'));
+        if (app) await flipFuses(path.join(dir, app), { ...FUSES, resetAdHocDarwinSignature: true });
+      }
+    },
+  },
   publishers: [
     {
       name: '@electron-forge/publisher-github',
