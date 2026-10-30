@@ -235,7 +235,7 @@ export default function ArcStats() {
         params.from = format(subDays(new Date(), f.days), 'yyyy-MM-dd');
         params.to   = format(new Date(), 'yyyy-MM-dd');
       }
-      const r = await statsAPI.get(params);
+      const r = await statsAPI.get(params, user?.createdAt);
       setStats(r.data.stats);
     } catch (e) {
       setError(e.response?.data?.error || 'Failed to load stats');

@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { userAPI } from '../api';
-import { clearToken } from '../api';
+import { userAPI, errorMessage } from '../api';
+import { useVault } from '../context/VaultContext';
+import LegacyLinkCard from '../components/LegacyLinkCard';
+import { PassphraseFields, passphraseProblem, RecoveryKeyCard } from './Vault';
 import { getUserAge } from '../utils/birthday';
 import Modal from '../components/Modal';
 import Spinner from '../components/Spinner';
@@ -25,8 +27,11 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
 
+  const vault = useVault();
+  const [security, setSecurity] = useState({ current: '', value: '', confirm: '', error: '', busy: false });
+  const [newKey, setNewKey] = useState('');
+
   const [profile, setProfile] = useState({
-    username: user?.username || '',
     displayName: user?.displayName || '',
     dateOfBirth: user?.dateOfBirth || '',
     gender: user?.gender || '',
@@ -42,7 +47,7 @@ export default function Settings() {
       await refreshUser();
       toast.success('Profile updated');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to update profile');
+      toast.error(errorMessage(err, 'Failed to update profile'));
     } finally {
       setSavingProfile(false);
     }
@@ -65,14 +70,45 @@ export default function Settings() {
     setLoading(true);
     try {
       await userAPI.deleteAccount();
-      await clearToken();
       setModal(null);
+      await logout();
       navigate('/signin');
     } catch {
       toast.error('Failed to delete account');
     } finally {
       setLoading(false);
     }
+  };
+
+  const runSecurity = async (fn) => {
+    setSecurity((s) => ({ ...s, error: '', busy: true }));
+    try {
+      await fn();
+      setSecurity({ current: '', value: '', confirm: '', error: '', busy: false });
+    } catch (err) {
+      setSecurity((s) => ({ ...s, error: errorMessage(err), busy: false }));
+    }
+  };
+
+  const handleChangePassphrase = (e) => {
+    e?.preventDefault();
+    const problem = passphraseProblem(security.value, security.confirm);
+    if (problem) { setSecurity((s) => ({ ...s, error: problem })); return; }
+    runSecurity(async () => {
+      await vault.changePassphrase(security.current, security.value);
+      setModal(null);
+      toast.success('Passphrase changed');
+    });
+  };
+
+  const handleNewRecoveryKey = (e) => {
+    e?.preventDefault();
+    runSecurity(async () => setNewKey(await vault.newRecoveryKey(security.current)));
+  };
+
+  const closeSecurity = () => {
+    setModal(null); setNewKey('');
+    setSecurity({ current: '', value: '', confirm: '', error: '', busy: false });
   };
 
   return (
@@ -84,24 +120,10 @@ export default function Settings() {
         <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, marginBottom: 20 }}>Profile</h2>
         <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label>Email</label>
-            <input type="email" value={user?.email || ''} disabled style={{ opacity: 0.6, cursor: 'not-allowed' }} />
-            <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>Email cannot be changed</p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div>
-              <label>Display Name</label>
-              <input type="text" value={profile.displayName}
-                onChange={(e) => setProfile((p) => ({ ...p, displayName: e.target.value }))}
-                placeholder="Your name" />
-            </div>
-            <div>
-              <label>Username</label>
-              <input type="text" value={profile.username}
-                onChange={(e) => setProfile((p) => ({ ...p, username: e.target.value }))}
-                placeholder="username" />
-            </div>
+            <label>Display Name</label>
+            <input type="text" value={profile.displayName}
+              onChange={(e) => setProfile((p) => ({ ...p, displayName: e.target.value }))}
+              placeholder="Your name" maxLength={60} />
           </div>
 
           <div>
@@ -143,14 +165,43 @@ export default function Settings() {
         </form>
       </section>
 
+      {/* Encryption */}
+      <section className="card" style={{ marginBottom: 24 }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Encryption</h2>
+        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20, lineHeight: 1.5 }}>
+          Your entries are encrypted on this computer before they are saved. Only your passphrase or recovery key can open them.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <button className="btn btn-ghost" onClick={() => setModal('passphrase')}>Change passphrase</button>
+          <button className="btn btn-ghost" onClick={() => setModal('recovery')}>New recovery key</button>
+          <button className="btn btn-ghost" onClick={vault.lock}>Lock now</button>
+        </div>
+      </section>
+
+      {/* Account */}
+      <section className="card" style={{ marginBottom: 24 }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Arcnode account</h2>
+        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16, lineHeight: 1.5 }}>
+          Signed in{user?.email ? <> as <strong style={{ color: 'var(--text)' }}>{user.email}</strong></> : ''}.
+          Your email, password and two-factor settings live at{' '}
+          <a href="https://backboard.arcnode.dev/account" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>backboard.arcnode.dev</a>.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <LegacyLinkCard onLinked={() => vault.retry()} />
+          <button className="btn btn-ghost" style={{ alignSelf: 'flex-start' }} onClick={async () => { await logout(); navigate('/signin'); }}>
+            Sign out
+          </button>
+        </div>
+      </section>
+
       {/* About */}
       <section className="card" style={{ marginBottom: 24 }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, marginBottom: 12 }}>About ArcJournal</h2>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <img src={logo} alt="ArcNode" style={{ height: 32 }} />
+          <img src={logo} alt="Arcnode" style={{ height: 32 }} />
           <div>
             <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14 }}>ArcJournal v{__APP_VERSION__}</p>
-            <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Part of the ArcNode Network</p>
+            <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Part of Arcnode</p>
           </div>
         </div>
       </section>
@@ -189,14 +240,48 @@ export default function Settings() {
       </section>
 
       <Modal isOpen={modal === 'deleteEntries'} title="Delete All Entries?"
-        message="This will permanently delete all your journal entries. Your account and ArcWrapped summaries remain."
+        message="This permanently deletes all your journal entries. Your account stays."
         confirmLabel="Yes, Delete All Entries" confirmDanger
         onConfirm={handleDeleteEntries} onCancel={() => setModal(null)} />
 
       <Modal isOpen={modal === 'deleteAccount'} title="Delete Your Account?"
-        message="This will permanently delete your account AND all associated entries and ArcWrapped summaries. There is no going back."
+        message="This permanently deletes your ArcJournal account and every entry. Your Arcnode account stays. There is no going back."
         confirmLabel="Yes, Delete My Account" confirmDanger
         onConfirm={handleDeleteAccount} onCancel={() => setModal(null)} />
+
+      {modal === 'passphrase' && (
+        <Modal isOpen title="Change passphrase" confirmLabel={security.busy ? 'Saving…' : 'Change passphrase'}
+          onConfirm={handleChangePassphrase} onCancel={closeSecurity}>
+          <form onSubmit={handleChangePassphrase} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <label htmlFor="current-passphrase">Current passphrase</label>
+              <input id="current-passphrase" type="password" value={security.current} autoComplete="current-password"
+                onChange={(e) => setSecurity((s) => ({ ...s, current: e.target.value }))} />
+            </div>
+            <PassphraseFields value={security.value} confirm={security.confirm} label="New passphrase"
+              onValue={(v) => setSecurity((s) => ({ ...s, value: v }))}
+              onConfirm={(v) => setSecurity((s) => ({ ...s, confirm: v }))} />
+            {security.error && <p style={{ color: 'var(--error)', fontSize: 13 }}>{security.error}</p>}
+            <button type="submit" hidden />
+          </form>
+        </Modal>
+      )}
+
+      {modal === 'recovery' && (
+        <Modal isOpen title={newKey ? 'Your new recovery key' : 'New recovery key'}
+          message={newKey ? 'Save it now. Your old recovery key no longer works.' : 'Your current recovery key stops working. Enter your passphrase to continue.'}
+          confirmLabel={newKey ? 'I saved it' : security.busy ? 'Creating…' : 'Create new key'}
+          onConfirm={newKey ? closeSecurity : handleNewRecoveryKey} onCancel={closeSecurity}>
+          {newKey ? <RecoveryKeyCard recoveryKey={newKey} /> : (
+            <form onSubmit={handleNewRecoveryKey}>
+              <label htmlFor="recovery-passphrase">Passphrase</label>
+              <input id="recovery-passphrase" type="password" value={security.current} autoComplete="current-password"
+                onChange={(e) => setSecurity((s) => ({ ...s, current: e.target.value }))} />
+              {security.error && <p style={{ color: 'var(--error)', fontSize: 13, marginTop: 8 }}>{security.error}</p>}
+            </form>
+          )}
+        </Modal>
+      )}
     </div>
   );
 }

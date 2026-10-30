@@ -1,52 +1,54 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { authAPI, storeToken, clearToken } from '../api';
+import { authAPI, onSignedOut } from '../api';
+import { setJournalKey } from '../lib/journal';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [offline, setOffline] = useState(false);
 
   const loadUser = useCallback(async () => {
     try {
+      const signedIn = await window.electronAPI?.auth.isSignedIn();
+      if (!signedIn) { setUser(null); return; }
       const res = await authAPI.me();
       setUser(res.data.user);
-    } catch {
-      setUser(null);
+      setOffline(false);
+    } catch (err) {
+      // No connection: keep the session, show a retry instead of signing out.
+      if (!err.response) setOffline(true);
+      else setUser(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
+  useEffect(() => { loadUser(); }, [loadUser]);
 
-  const login = async (identifier, password) => {
-    const res = await authAPI.login({ identifier, password });
-    await storeToken(res.data.token);
-    setUser(res.data.user);
-    return res.data;
-  };
-
-  const signup = async (email, username, password) => {
-    const res = await authAPI.signup({ email, username, password });
-    await storeToken(res.data.token);
-    setUser(res.data.user);
-    return res.data;
-  };
-
-  const logout = async () => {
-    await clearToken();
+  useEffect(() => onSignedOut(() => {
+    setJournalKey(null);
     setUser(null);
-  };
+  }), []);
 
-  const refreshUser = async () => {
+  // Opens arcnode.dev in the browser and resolves once the user approved.
+  const signIn = async () => {
+    await window.electronAPI.auth.signIn();
+    setLoading(true);
     await loadUser();
   };
 
+  const logout = async () => {
+    setJournalKey(null);
+    await window.electronAPI?.auth.signOut();
+    setUser(null);
+  };
+
+  const refreshUser = loadUser;
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, setUser, loading, offline, signIn, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

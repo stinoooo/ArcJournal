@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { logo } from '@/assets';
 
 export default function TitleBar() {
   const isElectron = !!window.electronAPI;
+  // macOS draws its own traffic lights (titleBarStyle: hiddenInset).
+  const isMac = window.electronAPI?.platform === 'darwin';
   const [hovered, setHovered] = useState(null);
 
   const controls = [
@@ -43,8 +44,10 @@ export default function TitleBar() {
         gap: 0,
       }}
     >
-      {/* macOS-style traffic light buttons */}
-      <div
+      {isMac && <div style={{ width: 72, flexShrink: 0 }} />}
+
+      {/* Window buttons */}
+      {!isMac && <div
         style={{ display: 'flex', gap: 6, WebkitAppRegion: 'no-drag', marginRight: 14 }}
         onMouseEnter={() => setHovered('group')}
         onMouseLeave={() => setHovered(null)}
@@ -76,7 +79,7 @@ export default function TitleBar() {
             {icon}
           </button>
         ))}
-      </div>
+      </div>}
 
       {/* Title */}
       <span style={{

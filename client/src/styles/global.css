@@ -16,7 +16,7 @@
   --radius-sm: 8px;
   --radius-lg: 16px;
   --font-display: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-body: 'DM Sans Variable', 'DM Sans', sans-serif;
   --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

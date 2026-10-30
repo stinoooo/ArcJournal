@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useVault } from '../context/VaultContext';
 import { useToast } from '../context/ToastContext';
 import { isTodayBirthday, getUserDisplayName } from '../utils/birthday';
 import { logo } from '@/assets';
@@ -21,7 +22,12 @@ export default function Sidebar() {
   const displayName = getUserDisplayName(user);
   const isAdmin     = user?.role === 'admin';
 
-  const handleLogout = async () => { await logout(); toast.info('Logged out'); navigate('/signin'); };
+  const { lock } = useVault();
+  const handleLogout = async () => { await logout(); toast.info('Signed out'); navigate('/signin'); };
+
+  const footerButton = { flex: 1, padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: 13, fontFamily: 'var(--font-display)', transition: 'all var(--transition)' };
+  const hoverOn = (e) => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.borderColor = 'var(--text)'; };
+  const hoverOff = (e) => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--border)'; };
 
   const linkStyle = (isActive, color = 'var(--accent)') => ({
     display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px',
@@ -36,7 +42,7 @@ export default function Sidebar() {
     <nav style={{ width: 220, flexShrink: 0, background: 'var(--surface)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', padding: '20px 12px', gap: 4 }}>
       {/* Logo */}
       <div style={{ paddingLeft: 8, paddingBottom: 20, borderBottom: '1px solid var(--border)', marginBottom: 12 }}>
-        <img src={logo} alt="ArcNode" style={{ height: 28, display: 'block', marginBottom: 6 }} />
+        <img src={logo} alt="Arcnode" style={{ height: 28, display: 'block', marginBottom: 6 }} />
         <span style={{ fontSize: 10, color: 'var(--muted)', letterSpacing: '0.08em', fontFamily: 'var(--font-display)' }}>ARCJOURNAL</span>
       </div>
 
@@ -80,10 +86,11 @@ export default function Sidebar() {
             {isAdmin && <div style={{ fontSize: 10, color: '#7c3aed', fontWeight: 700, letterSpacing: '0.06em' }}>ADMIN</div>}
           </div>
         </div>
-        <button onClick={handleLogout} style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: 13, fontFamily: 'var(--font-display)', textAlign: 'left', transition: 'all var(--transition)' }}
-          onMouseEnter={e => { e.target.style.color = 'var(--text)'; e.target.style.borderColor = 'var(--text)'; }}
-          onMouseLeave={e => { e.target.style.color = 'var(--muted)'; e.target.style.borderColor = 'var(--border)'; }}
-        >Sign out</button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button onClick={lock} title="Lock your journal until you enter your passphrase" style={footerButton}
+            onMouseEnter={hoverOn} onMouseLeave={hoverOff}>🔒 Lock</button>
+          <button onClick={handleLogout} style={footerButton} onMouseEnter={hoverOn} onMouseLeave={hoverOff}>Sign out</button>
+        </div>
       </div>
     </nav>
   );

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { VaultProvider, useVault } from './context/VaultContext';
 import TitleBar from './components/TitleBar';
 import Sidebar from './components/Sidebar';
 import Spinner from './components/Spinner';
@@ -10,7 +11,6 @@ import WarningModal from './components/WarningModal';
 import api from './api';
 
 import SignIn          from './pages/SignIn';
-import SignUp          from './pages/SignUp';
 import Onboarding      from './pages/Onboarding';
 import Dashboard       from './pages/Dashboard';
 import Journal         from './pages/Journal';
@@ -19,6 +19,7 @@ import Settings        from './pages/Settings';
 import AdminPanel      from './pages/AdminPanel';
 import AccountStatus   from './pages/AccountStatus';
 import AccountStanding from './pages/AccountStanding';
+import Vault           from './pages/Vault';
 
 function LoadingScreen() {
   return (
@@ -81,6 +82,41 @@ function OnboardingLayout() {
   );
 }
 
+function MigrationNotice() {
+  const { migration } = useVault();
+  if (!migration) return null;
+  return (
+    <div role="status" style={{ padding: '8px 16px', fontSize: 12, color: 'var(--accent)', background: 'var(--accent-glow)', borderBottom: '1px solid var(--border)' }}>
+      Encrypting your older entries ({migration.done} of {migration.total}). Keep ArcJournal open until this finishes.
+    </div>
+  );
+}
+
+function JournalGate() {
+  const { state } = useVault();
+  if (state !== 'unlocked') {
+    return (
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <TitleBar />
+        <div style={{ flex: 1, overflow: 'hidden' }}><Vault /></div>
+      </div>
+    );
+  }
+  return (
+    <WarningCheck>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <TitleBar />
+        <AnnouncementBanner />
+        <MigrationNotice />
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+          <Sidebar />
+          <main style={{ flex: 1, display: 'flex', overflow: 'hidden' }}><Outlet /></main>
+        </div>
+      </div>
+    </WarningCheck>
+  );
+}
+
 function ProtectedLayout() {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
@@ -88,16 +124,9 @@ function ProtectedLayout() {
   if (['suspended', 'terminated', 'deleted'].includes(user.status)) return <Navigate to="/account-status" replace />;
   if (!user.onboardingComplete) return <Navigate to="/onboarding" replace />;
   return (
-    <WarningCheck>
-      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <TitleBar />
-        <AnnouncementBanner />
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          <Sidebar />
-          <main style={{ flex: 1, display: 'flex', overflow: 'hidden' }}><Outlet /></main>
-        </div>
-      </div>
-    </WarningCheck>
+    <VaultProvider>
+      <JournalGate />
+    </VaultProvider>
   );
 }
 
@@ -130,7 +159,7 @@ export default function App() {
             <Routes>
               <Route element={<AuthLayout />}>
                 <Route path="/signin" element={<SignIn />} />
-                <Route path="/signup" element={<SignUp />} />
+                <Route path="/signup" element={<Navigate to="/signin" replace />} />
               </Route>
               <Route element={<OnboardingLayout />}>
                 <Route path="/onboarding" element={<Onboarding />} />

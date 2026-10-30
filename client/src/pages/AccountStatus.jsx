@@ -60,7 +60,7 @@ export default function AccountStatus() {
       <div style={{ width: '100%', maxWidth: 520 }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <img src={logo} alt="ArcNode" style={{ height: 32, marginBottom: 8 }} />
+          <img src={logo} alt="Arcnode" style={{ height: 32, marginBottom: 8 }} />
         </div>
 
         {/* Status card */}

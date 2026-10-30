@@ -1,9 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../api';
 
+// Arcnode accounts have no username; 1.x accounts that were never linked still do.
+const nameOf = (u) => u.displayName || u.username || u.email || 'Unnamed';
+const handleOf = (u) => [u.username && `@${u.username}`, u.email, u.arcnodeId ? 'Arcnode account' : 'Not linked (1.x)']
+  .filter(Boolean).join(' · ');
+
 // ── Constants ─────────────────────────────────────────────────
 const PRESET_REASONS = [
-  'Inappropriate content in journal entries',
+  'Abuse of the service',
   'Harassment or abusive behaviour toward other users',
   'Spam or promotional activity',
   'Impersonation of another person or entity',
@@ -255,11 +260,11 @@ function UserDrawer({ userId, onClose, onAction }) {
             <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 14 }}>
                 <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--accent-glow)', border: `2px solid ${status?.color || 'var(--accent)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700, color: 'var(--accent)', flexShrink: 0 }}>
-                  {(user.displayName || user.username)[0]?.toUpperCase()}
+                  {nameOf(user)[0].toUpperCase()}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 16 }}>{user.displayName || user.username}</div>
-                  <div style={{ fontSize: 13, color: 'var(--muted)' }}>@{user.username} · {user.email}</div>
+                  <div style={{ fontWeight: 700, fontSize: 16 }}>{nameOf(user)}</div>
+                  <div style={{ fontSize: 13, color: 'var(--muted)' }}>{handleOf(user)}</div>
                 </div>
                 <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: status?.bg, color: status?.color, fontWeight: 600 }}>
                   {status?.icon} {status?.label}
@@ -309,8 +314,8 @@ function UserDrawer({ userId, onClose, onAction }) {
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                         <StatCard label="Total entries" value={statsData.stats.totalEntries} icon="📖" />
                         <StatCard label="Days journaled" value={statsData.stats.daysJournaled} icon="🗓" />
-                        <StatCard label="Total words" value={statsData.stats.totalWords} icon="✍" />
-                        <StatCard label="Avg grade" value={statsData.stats.avgGrade} icon="⭐" color="#f59e0b" />
+                        <StatCard label="Total words" value={statsData.stats.totalWords ?? 'Encrypted'} icon="✍" />
+                        <StatCard label="Avg grade" value={statsData.stats.avgGrade ?? 'Encrypted'} icon="⭐" color="#f59e0b" />
                         <StatCard label="Current streak" value={`${statsData.stats.currentStreak}d`} icon="🔥" color="#f59e0b" />
                         <StatCard label="Longest streak" value={`${statsData.stats.longestStreak}d`} icon="🏆" color="#f59e0b" />
                       </div>
@@ -529,7 +534,7 @@ function UsersTab() {
   return (
     <div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-        <input type="text" placeholder="Search username, email, display name…" value={search} onChange={e => setSearch(e.target.value)}
+        <input type="text" placeholder="Search name or email…" value={search} onChange={e => setSearch(e.target.value)}
           style={{ flex: 1, minWidth: 200, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 14px', color: 'var(--text)', fontSize: 14 }}
         />
         <select value={statusF} onChange={e => setStatusF(e.target.value)} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 14px', color: statusF ? 'var(--text)' : 'var(--muted)', fontSize: 13 }}>
@@ -558,11 +563,11 @@ function UsersTab() {
               >
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent-glow)', border: `1px solid ${sc.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--accent)', flexShrink: 0 }}>
-                    {(u.displayName || u.username)[0]?.toUpperCase()}
+                    {nameOf(u)[0].toUpperCase()}
                   </div>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>{u.displayName || u.username}</div>
-                    <div style={{ fontSize: 12, color: 'var(--muted)' }}>@{u.username} · {u.email}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{nameOf(u)}</div>
+                    <div style={{ fontSize: 12, color: 'var(--muted)' }}>{handleOf(u)}</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -619,7 +624,7 @@ function AppealsTab() {
           <div key={a._id} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: 18, marginBottom: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
               <div>
-                <span style={{ fontWeight: 600 }}>@{a.userId?.username || 'deleted'}</span>
+                <span style={{ fontWeight: 600 }}>{a.userId ? nameOf(a.userId) : 'Deleted account'}</span>
                 <span style={{ marginLeft: 10, fontSize: 12, color: 'var(--muted)', textTransform: 'capitalize' }}>{a.type}</span>
               </div>
               <span style={{ fontSize: 12, color: 'var(--muted)' }}>{fmtDate(a.createdAt)}</span>
