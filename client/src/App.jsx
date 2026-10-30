@@ -21,6 +21,7 @@ import AdminPanel      from './pages/AdminPanel';
 import AccountStatus   from './pages/AccountStatus';
 import AccountStanding from './pages/AccountStanding';
 import Vault           from './pages/Vault';
+import LinkArcnodePrompt, { useLinkPrompt } from './components/LinkArcnode';
 
 function LoadingScreen() {
   return (
@@ -84,17 +85,53 @@ function OnboardingLayout() {
 }
 
 function MigrationNotice() {
-  const { migration } = useVault();
+  const { migration, retryMigration, dismissMigration } = useVault();
   if (!migration) return null;
+  const bar = (color, glow) => ({
+    display: 'flex', alignItems: 'center', gap: 12, padding: '8px 16px', fontSize: 12,
+    color, background: glow, borderBottom: '1px solid var(--border)',
+  });
+  const small = { padding: '3px 10px', fontSize: 12 };
+  if (migration.status === 'running') {
+    return (
+      <div role="status" style={bar('var(--accent)', 'var(--accent-glow)')}>
+        Encrypting your older entries ({migration.done} of {migration.total}). Keep ArcJournal open until this finishes.
+      </div>
+    );
+  }
+  if (migration.status === 'failed') {
+    return (
+      <div role="alert" style={bar('var(--error)', 'var(--error-glow)')}>
+        <span style={{ flex: 1 }}>{migration.error} Entries that were not encrypted yet are unchanged.</span>
+        <button className="btn btn-ghost" style={small} onClick={retryMigration}>Try again</button>
+      </div>
+    );
+  }
   return (
-    <div role="status" style={{ padding: '8px 16px', fontSize: 12, color: 'var(--accent)', background: 'var(--accent-glow)', borderBottom: '1px solid var(--border)' }}>
-      Encrypting your older entries ({migration.done} of {migration.total}). Keep ArcJournal open until this finishes.
+    <div role="status" style={bar('var(--text)', 'var(--success-glow)')}>
+      <span style={{ flex: 1 }}>
+        Encrypted {migration.count} older {migration.count === 1 ? 'entry' : 'entries'}. An unencrypted backup was saved
+        to {migration.backup}. Delete it once you have checked your journal.
+      </span>
+      {window.electronAPI?.platform !== 'browser' && (
+        <button className="btn btn-ghost" style={small} onClick={() => window.electronAPI.backups.reveal(migration.backup)}>Show file</button>
+      )}
+      <button className="btn btn-ghost" style={small} onClick={dismissMigration}>Done</button>
     </div>
   );
 }
 
 function JournalGate() {
   const { state } = useVault();
+  const linkPrompt = useLinkPrompt();
+  if (linkPrompt.show) {
+    return (
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <TitleBar />
+        <div style={{ flex: 1, overflow: 'hidden' }}><LinkArcnodePrompt onSkip={linkPrompt.skip} /></div>
+      </div>
+    );
+  }
   if (state !== 'unlocked') {
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>

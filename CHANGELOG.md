@@ -10,8 +10,12 @@ A rebuild of ArcJournal around privacy and a proper desktop app.
   with AES-256-GCM. Choose a passphrase and save a recovery key; the server only stores
   ciphertext.
 - **Sign in with your Arcnode account**, in your browser, with passkeys and two-factor
-  authentication. Separate ArcJournal passwords are gone.
-- **Bring your 1.x journal along**: link your old account once and its entries are encrypted.
+  authentication. New accounts are made on arcnode.dev.
+- **Your 1.x account keeps working**: sign in with your password and connect an Arcnode
+  account when you are ready. The password stops working once you have connected.
+- **Your 1.x journal is encrypted safely**: a full backup is saved on your computer first,
+  every entry is checked after encrypting, and an interrupted migration picks up where it
+  stopped.
 - **macOS and Linux.** A universal macOS app (Apple silicon and Intel) and `.deb`, `.rpm` and
   `.zip` packages for Linux, next to the Windows installer.
 - **Updates that work.** Windows updates in the background; macOS and Linux show when a new
@@ -39,7 +43,7 @@ A rebuild of ArcJournal around privacy and a proper desktop app.
 
 ### Removed
 
-- Sign-up and sign-in with an ArcJournal password.
+- Creating new accounts with an ArcJournal password, and signing in from 1.x apps.
 - Unused AI helpers.
 
 ## 1.1.1

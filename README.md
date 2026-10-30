@@ -58,10 +58,18 @@ The app is a public client: it holds no secret, receives the code on a loopback 
 (`127.0.0.1:47825` or `47826`) and keeps the refresh token encrypted with the OS keychain in
 the main process. The interface only ever sees short-lived access tokens.
 
-Coming from ArcJournal 1.x? Sign in with your Arcnode account, then choose **Used ArcJournal
-before? Bring your old journal** and enter your old email or username and password once. Your
-entries move over and are encrypted the next time you unlock the journal; the plaintext copies
-are then deleted from the server.
+Coming from ArcJournal 1.x? Your account keeps working. Either:
+
+- choose **Sign in with your ArcJournal 1.x password**. The app offers to connect an Arcnode
+  account (or later, from Settings). Your password keeps working until you do, and stops
+  working once you have.
+- or sign in with Arcnode and choose **Used ArcJournal before? Bring your old journal**.
+
+When you set your passphrase, your 1.x entries are encrypted. First the app saves a full
+unencrypted backup to `Documents/ArcJournal backups`, and it checks every entry decrypts to
+exactly the original before the plaintext on the server is replaced. If it is interrupted, it
+continues on the next unlock. The server also keeps a snapshot of the plaintext for 90 days so
+support can undo it; see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Install
 

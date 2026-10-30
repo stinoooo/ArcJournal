@@ -19,17 +19,42 @@ Node.js version from `engines` in the root `package.json`.
 | `ARCNODE_ISSUER` | `https://backboard.arcnode.dev` (the default). |
 | `ARCNODE_JWKS_URL` | `https://backboard.arcnode.dev/.well-known/jwks.json` (the default). |
 | `CORS_ORIGINS` | Leave empty. The app's `app://arcjournal` origin is always allowed. |
+| `JWT_SECRET` | Keep the existing value. It signs password sessions for 1.x accounts that are not linked yet. |
 
-`JWT_SECRET` and `JWT_EXPIRES_IN` belonged to the 1.x password sign-in and can be removed.
+`JWT_EXPIRES_IN` is no longer read and can be removed.
 
 ### What happens on the first 2.0 start
 
 - Indexes are synced: email is no longer unique and usernames only exist on 1.x accounts.
 - The `wraps` collection from 1.x is dropped. It held entry titles and grades in plaintext,
   and wraps are now computed in the app.
-- 1.x accounts and entries stay as they are until their owner links them to an Arcnode
-  account. The app then encrypts the entries and the server deletes the plaintext.
-- ArcJournal 1.x apps get `426 Upgrade Required` with a link to the download page.
+- 1.x accounts and entries stay as they are. Their owners keep signing in with their password
+  in 2.0 until they connect an Arcnode account; only then is the password removed.
+- ArcJournal 1.x apps get `426 Upgrade Required` with a link to the download page. Their
+  saved sessions are not accepted by 2.0.
+
+## Encrypting 1.x journals, and undoing it
+
+The app encrypts a 1.x journal right after its owner sets a passphrase:
+
+1. It saves a full plaintext export (entries, versions, attachments) to
+   `Documents/ArcJournal backups` on that computer. Nothing is encrypted if that fails.
+2. It seals each entry, opens it again and checks it matches the original exactly.
+3. The server copies the plaintext entry into `legacybackups`, then replaces it with the
+   ciphertext. One entry at a time, so an interruption leaves each entry either untouched or
+   fully encrypted, and the next unlock continues where it stopped.
+
+Server snapshots expire after 90 days and are deleted with the journal or the account. To put
+a user's 1.x entries back exactly as they were (support only):
+
+```bash
+node server/scripts/restore-legacy-backup.js <email or user id> --dry-run
+node server/scripts/restore-legacy-backup.js <email or user id>
+```
+
+The app encrypts the restored entries again on the next unlock.
+
+Before deploying 2.0, take a manual backup of the `ArcJournal MongoDB` volume in Railway as well.
 
 ## Arcnode sign-in (Backboard)
 

@@ -22,21 +22,31 @@ export function VaultProvider({ children }) {
   const { user } = useAuth();
   const [vault, setVault] = useState(null);
   const [state, setState] = useState('loading'); // loading | setup | locked | unlocked | error
-  const [migration, setMigration] = useState(null); // { done, total } while encrypting 1.x entries
+  // Encrypting entries left in plaintext by 1.x:
+  // { status: 'running', done, total } | { status: 'done', count, backup } | { status: 'failed', error }
+  const [migration, setMigration] = useState(null);
   const remembering = window.electronAPI?.vault;
+
+  const migrate = useCallback(async () => {
+    try {
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
+      const result = await encryptLegacyEntries({
+        onProgress: (done, total) => setMigration({ status: 'running', done, total }),
+        saveBackup: (json) => window.electronAPI.backups.write(`ArcJournal 1.x backup ${stamp}.json`, json),
+      });
+      setMigration(result.count ? { status: 'done', ...result } : null);
+    } catch (err) {
+      // Every entry is either still plaintext or fully encrypted, so retrying is safe.
+      setMigration({ status: 'failed', error: err.message || 'Encrypting your older entries stopped.' });
+    }
+  }, []);
 
   const open = useCallback(async (key, currentVault) => {
     setJournalKey(key);
     setState('unlocked');
-    try {
-      await encryptLegacyEntries((done, total) => setMigration(total ? { done, total } : null));
-    } catch {
-      // Tried again on the next unlock.
-    } finally {
-      setMigration(null);
-    }
+    migrate();
     return currentVault;
-  }, []);
+  }, [migrate]);
 
   const load = useCallback(async () => {
     if (!user || user.status !== 'active') return;
@@ -119,7 +129,7 @@ export function VaultProvider({ children }) {
 
   return (
     <VaultContext.Provider value={{
-      state, vault, migration, canRemember: !!remembering,
+      state, vault, migration, canRemember: !!remembering, retryMigration: migrate, dismissMigration: () => setMigration(null),
       setup, unlock, recover, changePassphrase, newRecoveryKey, lock, reset, retry: load,
     }}>
       {children}

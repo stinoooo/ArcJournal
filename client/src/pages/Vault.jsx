@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useVault } from '../context/VaultContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { errorMessage } from '../api';
+import { errorMessage, sealedEntriesAPI } from '../api';
 import Spinner from '../components/Spinner';
 import CenteredCard, { ErrorNote } from '../components/CenteredCard';
 
@@ -93,6 +93,13 @@ function Setup() {
   const [error, setError] = useState('');
   const [created, setCreated] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [legacyCount, setLegacyCount] = useState(0);
+
+  useEffect(() => {
+    sealedEntriesAPI.list()
+      .then((r) => setLegacyCount(r.data.entries.filter((e) => e.legacy).length))
+      .catch(() => {});
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -135,6 +142,13 @@ function Setup() {
         ArcJournal encrypts every entry on this computer before it is saved. Choose a passphrase to unlock it.
         Nobody else, not even Arcnode, can read your journal or reset this passphrase.
       </p>
+      {legacyCount > 0 && (
+        <p style={{ ...lead, marginTop: -12, padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: 13 }}>
+          Your {legacyCount} existing {legacyCount === 1 ? 'entry is' : 'entries are'} encrypted right after this. First, a full
+          unencrypted backup is saved to <strong style={{ color: 'var(--text)' }}>Documents/ArcJournal backups</strong> on this computer,
+          and every entry is checked after encrypting before its old copy is replaced.
+        </p>
+      )}
       <form onSubmit={submit} style={form}>
         <PassphraseFields value={value} confirm={confirm} onValue={setValue} onConfirm={setConfirm} />
         <KeepUnlocked checked={keep} onChange={setKeep} />

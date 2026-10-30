@@ -125,26 +125,71 @@ export const statsAPI = {
   },
 };
 
+export class MigrationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'MigrationError';
+  }
+}
+
+// Same value, same JSON: what was sealed must open to exactly what was there.
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
 /**
- * Encrypts every entry still stored in plaintext by ArcJournal 1.x, including
- * its saved versions, then the server deletes the plaintext. Reports progress
- * as (done, total).
+ * Encrypts every entry ArcJournal 1.x stored in plaintext, safely:
+ *
+ * 1. Saves a full plaintext export of those entries and their versions on this
+ *    device (saveBackup must resolve with where it went). Nothing is encrypted
+ *    if that fails.
+ * 2. Seals each entry and its versions, then opens them again and checks they
+ *    match the original exactly before sending them. The server keeps its own
+ *    snapshot of the plaintext before replacing it (see the server's LegacyBackup).
+ * 3. One entry at a time, so an interruption leaves every entry either fully
+ *    plaintext or fully encrypted. Running it again picks up the rest.
+ *
+ * Resolves with { count, backup }.
  */
-export async function encryptLegacyEntries(onProgress = () => {}) {
+export async function encryptLegacyEntries({ onProgress = () => {}, saveBackup }) {
   const key = requireKey();
   const res = await sealedEntriesAPI.list();
   const legacy = res.data.entries.filter((e) => e.legacy);
-  let done = 0;
-  onProgress(done, legacy.length);
+  if (!legacy.length) return { count: 0, backup: null };
+
+  const full = [];
   for (const raw of legacy) {
     const { data } = await sealedEntriesAPI.versions(raw._id);
+    full.push({ entry: raw, versions: data.versions.filter((v) => v.content != null) });
+  }
+  const backup = await saveBackup(JSON.stringify({
+    app: 'ArcJournal',
+    kind: 'Plaintext backup of ArcJournal 1.x entries, made before encrypting them',
+    exportedAt: new Date().toISOString(),
+    entries: full,
+  }, null, 2));
+  if (!backup) throw new MigrationError('The backup could not be saved, so nothing was encrypted.');
+
+  let done = 0;
+  onProgress(done, legacy.length);
+  for (const { entry: raw, versions: oldVersions } of full) {
+    const body = bodyOf(raw);
+    const attachments = raw.attachments || [];
+    const sealed = await sealEntry(raw.date, raw);
     const versions = [];
-    for (const v of data.versions) {
-      if (v.content == null) continue;
-      versions.push({ body: await seal(key, bodyOf({ ...raw, content: v.content }), bodyContext(raw.date)), savedAt: v.savedAt });
+    for (const v of oldVersions) {
+      const versionBody = bodyOf({ ...raw, content: v.content });
+      const sealedVersion = await seal(key, versionBody, bodyContext(raw.date));
+      if (!same(await open(key, sealedVersion, bodyContext(raw.date)), versionBody)) {
+        throw new MigrationError(`A version of your entry from ${raw.date} did not encrypt correctly. Nothing was changed for it.`);
+      }
+      versions.push({ body: sealedVersion, savedAt: v.savedAt });
     }
-    await sealedEntriesAPI.update(raw._id, { ...(await sealEntry(raw.date, raw)), versions });
+    const openedBody = await open(key, sealed.body, bodyContext(raw.date));
+    const openedFiles = sealed.files ? await open(key, sealed.files, filesContext(raw.date)) : [];
+    if (!same(openedBody, body) || !same(openedFiles, attachments)) {
+      throw new MigrationError(`Your entry from ${raw.date} did not encrypt correctly. Nothing was changed for it.`);
+    }
+    await sealedEntriesAPI.update(raw._id, { ...sealed, versions });
     onProgress(++done, legacy.length);
   }
-  return legacy.length;
+  return { count: legacy.length, backup };
 }
