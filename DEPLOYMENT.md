@@ -1,204 +1,73 @@
-# ArcJournal — Deployment & Updates
+# Deployment
 
-A complete guide to hosting the backend on Railway and shipping
-auto-updates to users via GitHub Releases.
+## API on Railway
 
----
+The API is the `ArcJournal` service in the Arcnode project on Railway (region
+`europe-west4`), with the `ArcJournal MongoDB` service next to it. It deploys from `main`
+at [arcjournal-production.up.railway.app](https://arcjournal-production.up.railway.app/health).
 
-## Part 1 — Host the Backend on Railway
+[`railway.json`](railway.json) installs only `server/` (the desktop tooling at the root is
+not needed there), starts `node server/index.js` and waits for `/health`. Railway reads the
+Node.js version from `engines` in the root `package.json`.
 
-### Why Railway?
-Your Electron app needs somewhere to run `server/index.js` and MongoDB
-that isn't your own laptop. Railway gives you a free tier that's
-enough for personal use, and a $5/month hobby plan for heavier use.
-
-### 1.1 — Push your code to GitHub
-
-```bash
-# From the ArcJournal root folder
-git init
-git add .
-git commit -m "Initial commit"
-
-# Create a repo at github.com, then:
-git remote add origin https://github.com/YOUR_USERNAME/arcjournal.git
-git push -u origin main
-```
-
-Add a `.gitignore` if you haven't already — it should exclude:
-```
-.env
-node_modules/
-client/dist/
-out/
-```
-
----
-
-### 1.2 — Create a Railway project
-
-1. Go to [railway.app](https://railway.app) and sign in with GitHub.
-2. Click **New Project → Deploy from GitHub repo**.
-3. Select your `arcjournal` repository.
-4. Railway will auto-detect the `railway.json` and start deploying.
-
----
-
-### 1.3 — Add a MongoDB database
-
-In your Railway project dashboard:
-
-1. Click **+ New** → **Database** → **MongoDB**.
-2. Railway provisions a MongoDB instance and injects `MONGO_URL`
-   into your environment automatically.
-3. In your service's **Variables** tab, set:
+### Variables
 
 | Variable | Value |
-|---|---|
-| `MONGODB_URI` | `${{MongoDB.MONGO_URL}}` (Railway reference syntax) |
-| `JWT_SECRET` | A long random string (use a password manager) |
-| `JWT_EXPIRES_IN` | `30d` |
-| `PORT` | `3001` |
+| --- | --- |
+| `MONGODB_URI` | Reference to the `ArcJournal MongoDB` connection URL. |
+| `ARCJOURNAL_CLIENT_ID` | The ArcJournal OAuth client ID from Backboard (below). |
+| `ARCNODE_ISSUER` | `https://backboard.arcnode.dev` (the default). |
+| `ARCNODE_JWKS_URL` | `https://backboard.arcnode.dev/.well-known/jwks.json` (the default). |
+| `CORS_ORIGINS` | Leave empty. The app's `app://arcjournal` origin is always allowed. |
 
-Railway will give you a public URL like:
-`https://arcjournal-server-production.up.railway.app`
+`JWT_SECRET` and `JWT_EXPIRES_IN` belonged to the 1.x password sign-in and can be removed.
 
----
+### What happens on the first 2.0 start
 
-### 1.4 — Point the Electron app at Railway
+- Indexes are synced: email is no longer unique and usernames only exist on 1.x accounts.
+- The `wraps` collection from 1.x is dropped. It held entry titles and grades in plaintext,
+  and wraps are now computed in the app.
+- 1.x accounts and entries stay as they are until their owner links them to an Arcnode
+  account. The app then encrypts the entries and the server deletes the plaintext.
+- ArcJournal 1.x apps get `426 Upgrade Required` with a link to the download page.
 
-Create `client/.env.production` (this file is used when you run `npm run build`):
+## Arcnode sign-in (Backboard)
 
-```env
-VITE_API_URL=https://arcjournal-server-production.up.railway.app
-```
+ArcJournal is an OAuth client in Backboard. Register it once at
+[backboard.arcnode.dev/oauth-clients](https://backboard.arcnode.dev/oauth-clients) (owner or
+admin):
 
-Now when you build the Electron app (`npm run make`), it will talk
-to your Railway server instead of localhost.
+| Field | Value |
+| --- | --- |
+| Name | ArcJournal |
+| Type | Public (PKCE, no secret) |
+| Redirect URIs | `http://127.0.0.1:47825/callback` and `http://127.0.0.1:47826/callback` |
+| Scopes | `openid`, `profile`, `email` |
 
----
+Put the client ID in `package.json` under `arcnode.clientId` (the app reads it from there) and
+in `ARCJOURNAL_CLIENT_ID` on Railway. Backboard shows a secret once at registration; ArcJournal
+does not use it, so do not store it.
 
-### 1.5 — Redeploy after code changes
+## Desktop releases
 
-Because Railway is connected to your GitHub repo, every `git push`
-to the `main` branch automatically triggers a redeploy. You don't
-need to do anything else — it's fully automatic.
+1. Update the version in `package.json`, `client/package.json` and `server/package.json`, and
+   add the release to [`CHANGELOG.md`](CHANGELOG.md).
+2. Merge to `main`. Railway deploys the API.
+3. Tag the merge commit: `git tag v<version> && git push origin v<version>`.
+4. The [release workflow](.github/workflows/release.yml) builds Windows (Squirrel), macOS
+   (universal `.dmg` and `.zip`) and Linux (`.deb`, `.rpm`, `.zip`) and uploads them to a
+   draft release.
+5. Check the draft, then publish it.
 
----
+Windows installs pick the update up from
+[update.electronjs.org](https://github.com/electron/update.electronjs.org), which reads the
+published GitHub releases. macOS and Linux builds show a banner that opens the release page.
 
-## Part 2 — Ship Auto-Updates via GitHub Releases
+The arcnode.dev downloads page resolves the latest release itself through
+`/api/download/arcjournal`.
 
-When you push a new `.exe` to GitHub Releases, your users will see
-the in-app update banner automatically on next launch.
+### macOS signing
 
-### 2.1 — Create a GitHub Personal Access Token
-
-1. Go to **github.com → Settings → Developer settings →
-   Personal access tokens → Fine-grained tokens**.
-2. Create a token with **repo** scope (read & write).
-3. Copy the token — you'll need it once.
-
----
-
-### 2.2 — Set the token in your environment
-
-On Windows (one-time, run in your terminal):
-```powershell
-$env:GITHUB_TOKEN = "ghp_yourTokenHere"
-```
-
-Or add it permanently via **System Properties → Environment Variables**.
-
----
-
-### 2.3 — Update `package.json` with your GitHub username
-
-In `package.json`, find the `publishers` section and replace
-`YOUR_GITHUB_USERNAME` with your actual GitHub username:
-
-```json
-"repository": {
-  "owner": "stinoooo",
-  "name": "arcjournal"
-}
-```
-
----
-
-### 2.4 — Bump the version
-
-In `package.json`, increment the version before each release:
-
-```json
-"version": "1.1.1"
-```
-
-Also update it in the `packagerConfig`:
-```json
-"appVersion": "1.1.1"
-```
-
----
-
-### 2.5 — Build and publish
-
-```bash
-npm run publish
-```
-
-This will:
-1. Build the React frontend (`client/dist/`)
-2. Package the Electron app into an installer (`.exe` on Windows)
-3. Create a **draft release** on GitHub with the installer attached
-4. Upload a `RELEASES` file that `electron-updater` reads
-
-Then go to **github.com → your repo → Releases** and click
-**Publish** on the draft release to make it live.
-
-Existing users will see the update banner in-app within ~5 seconds
-of next launch.
-
----
-
-## Summary: Your Workflow Going Forward
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│  SERVER CHANGES (API, database, routes)                     │
-│  ─────────────────────────────────────                      │
-│  1. Make your changes                                       │
-│  2. git add . && git commit -m "fix: ..."                   │
-│  3. git push                                                │
-│  → Railway redeploys automatically in ~1 minute             │
-│                                                             │
-│  CLIENT CHANGES (new features for users)                    │
-│  ────────────────────────────────────────                   │
-│  1. Make your changes                                       │
-│  2. Bump version in package.json                            │
-│  3. npm run publish                                         │
-│  4. Go to GitHub → Releases → Publish the draft            │
-│  → Users see update banner on next app launch               │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Troubleshooting
-
-**Railway deploy fails:**
-Check the build logs in the Railway dashboard. Most common issue is
-a missing env variable — make sure `MONGODB_URI` and `JWT_SECRET` are set.
-
-**Auto-update not triggering:**
-- Confirm the GitHub release is published (not a draft).
-- The update check only runs in production builds, not in `npm start`.
-- Make sure the new version number is higher than the installed one.
-
-**CORS errors in production:**
-Add your Railway URL to the `CORS_ORIGINS` env var in Railway:
-```
-CORS_ORIGINS=https://arcjournal-server-production.up.railway.app
-```
-
+The macOS build is not signed or notarized yet, so Gatekeeper asks for confirmation on the
+first launch and automatic updates are not possible there. Signing needs an Apple Developer
+account; Forge's `osxSign` and `osxNotarize` options in `forge.config.js` take it from there.
