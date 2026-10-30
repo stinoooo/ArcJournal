@@ -3,7 +3,6 @@ import { HashRouter as Router, Routes, Route, Navigate, Outlet } from 'react-rou
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { VaultProvider, useVault } from './context/VaultContext';
-import TitleBar from './components/TitleBar';
 import Sidebar from './components/Sidebar';
 import Spinner from './components/Spinner';
 import AnnouncementBanner from './components/AnnouncementBanner';
@@ -21,7 +20,6 @@ import AdminPanel      from './pages/AdminPanel';
 import AccountStatus   from './pages/AccountStatus';
 import AccountStanding from './pages/AccountStanding';
 import Vault           from './pages/Vault';
-import LinkArcnodePrompt, { useLinkPrompt } from './components/LinkArcnode';
 
 function LoadingScreen() {
   return (
@@ -64,7 +62,6 @@ function AuthLayout() {
   }
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <TitleBar />
       <div style={{ flex: 1, overflow: 'hidden' }}><Outlet /></div>
     </div>
   );
@@ -78,7 +75,6 @@ function OnboardingLayout() {
   if (user.onboardingComplete) return <Navigate to="/app" replace />;
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <TitleBar />
       <div style={{ flex: 1, overflow: 'hidden' }}><Outlet /></div>
     </div>
   );
@@ -123,19 +119,9 @@ function MigrationNotice() {
 
 function JournalGate() {
   const { state } = useVault();
-  const linkPrompt = useLinkPrompt();
-  if (linkPrompt.show) {
-    return (
-      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <TitleBar />
-        <div style={{ flex: 1, overflow: 'hidden' }}><LinkArcnodePrompt onSkip={linkPrompt.skip} /></div>
-      </div>
-    );
-  }
   if (state !== 'unlocked') {
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <TitleBar />
         <div style={{ flex: 1, overflow: 'hidden' }}><Vault /></div>
       </div>
     );
@@ -143,7 +129,6 @@ function JournalGate() {
   return (
     <WarningCheck>
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <TitleBar />
         <UpdateBanner />
         <AnnouncementBanner />
         <MigrationNotice />
@@ -183,7 +168,6 @@ function StatusRoute() {
   if (user.status === 'active') return <Navigate to="/app" replace />;
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <TitleBar />
       <div style={{ flex: 1, overflow: 'hidden' }}><Outlet /></div>
     </div>
   );

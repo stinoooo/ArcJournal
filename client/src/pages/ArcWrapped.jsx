@@ -31,11 +31,11 @@ function StatCard({ label, value, sub, color, icon, big, style }) {
           {icon}
         </div>
       )}
-      <p style={{ fontSize:10, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--muted)',
+      <p style={{ fontSize:12, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--muted)',
         letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:8 }}>{label}</p>
       <p style={{ fontFamily:'var(--font-display)', fontWeight:800,
         fontSize: big ? 36 : 24, color: color || 'var(--text)', lineHeight:1 }}>{value}</p>
-      {sub && <p style={{ fontSize:11, color:'var(--muted)', marginTop:5 }}>{sub}</p>}
+      {sub && <p style={{ fontSize:12, color:'var(--muted)', marginTop:5 }}>{sub}</p>}
     </div>
   );
 }
@@ -45,12 +45,12 @@ function GradeBarChart({ gradeDistribution }) {
   const max = Math.max(...gradeDistribution.map(d => d.count), 1);
   return (
     <div className="card">
-      <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:13, marginBottom:16 }}>Grade Distribution</p>
+      <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:14, marginBottom:16 }}>Grade Distribution</p>
       <div style={{ display:'flex', alignItems:'flex-end', gap:4, height:80 }}>
         {gradeDistribution.map(({ grade, count }) => (
           <div key={grade} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
             {count > 0 && (
-              <span style={{ fontSize:9, color:gradeColor(grade), fontFamily:'var(--font-display)', fontWeight:700 }}>{count}</span>
+              <span style={{ fontSize:11, color:gradeColor(grade), fontFamily:'var(--font-display)', fontWeight:700 }}>{count}</span>
             )}
             <div style={{
               width:'100%', borderRadius:'3px 3px 0 0',
@@ -58,7 +58,7 @@ function GradeBarChart({ gradeDistribution }) {
               height: count>0 ? `${Math.max((count/max)*62,4)}px` : '3px',
               opacity: count>0 ? 1 : 0.3, transition:'height 0.4s ease',
             }} />
-            <span style={{ fontSize:9, color:'var(--muted)', fontFamily:'var(--font-display)' }}>{grade}</span>
+            <span style={{ fontSize:11, color:'var(--muted)', fontFamily:'var(--font-display)' }}>{grade}</span>
           </div>
         ))}
       </div>
@@ -72,9 +72,9 @@ function DowChart({ dowBreakdown, peakDay }) {
   return (
     <div className="card">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
-        <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:13 }}>Day of Week</p>
+        <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:14 }}>Day of Week</p>
         {peakDay && (
-          <span style={{ fontSize:11, color:'var(--accent)', background:'var(--accent-glow)', padding:'2px 10px', borderRadius:100, border:'1px solid var(--border)' }}>
+          <span style={{ fontSize:12, color:'var(--accent)', background:'var(--accent-glow)', padding:'2px 10px', borderRadius:100, border:'1px solid var(--border)' }}>
             Peak: {peakDay}
           </span>
         )}
@@ -90,7 +90,7 @@ function DowChart({ dowBreakdown, peakDay }) {
                 height: count>0 ? `${Math.max((count/max)*56,4)}px` : '3px',
                 transition:'height 0.4s ease', boxShadow: isPeak?'0 0 8px var(--accent-glow)':undefined,
               }} />
-              <span style={{ fontSize:9, color: isPeak?'var(--accent)':'var(--muted)', fontFamily:'var(--font-display)', fontWeight: isPeak?700:400 }}>{short}</span>
+              <span style={{ fontSize:11, color: isPeak?'var(--accent)':'var(--muted)', fontFamily:'var(--font-display)', fontWeight: isPeak?700:400 }}>{short}</span>
             </div>
           );
         })}
@@ -105,7 +105,7 @@ function MonthlyChart({ monthlyActivity }) {
   const max = Math.max(...monthlyActivity.map(m => m.count), 1);
   return (
     <div className="card">
-      <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:13, marginBottom:16 }}>Monthly Activity</p>
+      <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:14, marginBottom:16 }}>Monthly Activity</p>
       <div style={{ display:'flex', alignItems:'flex-end', gap:3, height:64, overflowX:'auto' }}>
         {monthlyActivity.map(({ month, count }) => {
           const [y, m] = month.split('-');
@@ -118,7 +118,7 @@ function MonthlyChart({ monthlyActivity }) {
                 height: count>0 ? `${Math.max((count/max)*48,4)}px` : '3px',
                 transition:'height 0.4s ease',
               }} title={`${label}: ${count} days`} />
-              <span style={{ fontSize:8, color:'var(--muted)', fontFamily:'var(--font-display)', textAlign:'center', lineHeight:1.2 }}>{label}</span>
+              <span style={{ fontSize:10, color:'var(--muted)', fontFamily:'var(--font-display)', textAlign:'center', lineHeight:1.2 }}>{label}</span>
             </div>
           );
         })}
@@ -133,7 +133,7 @@ function MoodGrid({ moodFreq, totalEntries }) {
   if (!sorted.length) return null;
   return (
     <div className="card">
-      <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:13, marginBottom:16 }}>Mood Breakdown</p>
+      <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:14, marginBottom:16 }}>Mood Breakdown</p>
       <div style={{ display:'flex', flexWrap:'wrap', gap:10 }}>
         {sorted.map(([name, count]) => {
           const pct = totalEntries ? Math.round((count/totalEntries)*100) : 0;
@@ -144,7 +144,7 @@ function MoodGrid({ moodFreq, totalEntries }) {
               borderRadius:10, padding:'12px 10px',
             }}>
               <img src={emotionImageSrc(name)} alt={name} style={{ width:32, height:32, objectFit:'contain' }} />
-              <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:10, color:emotionColor(name) }}>
+              <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:12, color:emotionColor(name) }}>
                 {emotionLabel(name)}
               </span>
               <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:16, color:'var(--text)' }}>
@@ -153,7 +153,7 @@ function MoodGrid({ moodFreq, totalEntries }) {
               <div style={{ width:'100%', height:3, borderRadius:2, background:'var(--border)', overflow:'hidden' }}>
                 <div style={{ width:`${pct}%`, height:'100%', background:emotionColor(name), borderRadius:2 }} />
               </div>
-              <span style={{ fontSize:10, color:'var(--muted)' }}>{pct}%</span>
+              <span style={{ fontSize:12, color:'var(--muted)' }}>{pct}%</span>
             </div>
           );
         })}
@@ -189,13 +189,13 @@ function Heatmap({ heatmapMap }) {
   return (
     <div className="card">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
-        <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:13 }}>Writing Activity (last 90 days)</p>
+        <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:14 }}>Writing Activity (last 90 days)</p>
         <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-          <span style={{ fontSize:10, color:'var(--muted)' }}>Less</span>
+          <span style={{ fontSize:12, color:'var(--muted)' }}>Less</span>
           {[0.15, 0.35, 0.55, 0.75, 1].map(o => (
             <div key={o} style={{ width:10, height:10, borderRadius:2, background:'var(--accent)', opacity:o }} />
           ))}
-          <span style={{ fontSize:10, color:'var(--muted)' }}>More</span>
+          <span style={{ fontSize:12, color:'var(--muted)' }}>More</span>
         </div>
       </div>
       <div style={{ display:'flex', gap:2, overflowX:'auto' }}>
@@ -253,13 +253,13 @@ export default function ArcStats() {
   return (
     <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
       {/* Header */}
-      <div style={{ padding:'20px 28px 14px', borderBottom:'1px solid var(--border)', flexShrink:0, background:'var(--bg)' }}>
-        <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between' }}>
+      <div className="page-header" style={{ paddingBottom:16, borderBottom:'1px solid var(--border)', background:'var(--bg)' }}>
+        <div className="page-inner" style={{ '--page-max': '1280px', display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
           <div>
-            <h1 style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22, letterSpacing:'-0.02em' }}>
+            <h1 style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:28, letterSpacing:'-0.02em' }}>
               Your Stats
             </h1>
-            <p style={{ color:'var(--muted)', fontSize:12, marginTop:2 }}>
+            <p style={{ color:'var(--muted)', fontSize:13, marginTop:2 }}>
               {user?.createdAt && `Member since ${format(new Date(user.createdAt), 'MMMM d, yyyy')}`}
               {memberDays && ` · ${memberDays} day${memberDays!==1?'s':''} with ArcJournal`}
             </p>
@@ -270,7 +270,7 @@ export default function ArcStats() {
               <button key={f.label}
                 onClick={() => setFilter(f)}
                 className={filter.label===f.label ? 'btn btn-primary' : 'btn btn-ghost'}
-                style={{ padding:'5px 12px', fontSize:11, fontFamily:'var(--font-display)' }}>
+                style={{ padding:'7px 14px', fontSize:13, fontFamily:'var(--font-display)' }}>
                 {f.label}
               </button>
             ))}
@@ -278,7 +278,8 @@ export default function ArcStats() {
         </div>
       </div>
 
-      <div style={{ flex:1, overflowY:'auto', padding:'20px 28px', gap:16, display:'flex', flexDirection:'column' }}>
+      <div className="page">
+      <div className="page-inner" style={{ '--page-max': '1280px', gap:20, display:'flex', flexDirection:'column' }}>
         {loading && (
           <div style={{ display:'flex', justifyContent:'center', paddingTop:60 }}><Spinner size={32} /></div>
         )}
@@ -289,13 +290,13 @@ export default function ArcStats() {
           <div style={{ textAlign:'center', padding:60, color:'var(--muted)' }}>
             <div style={{ fontSize:48, opacity:0.15, marginBottom:16 }}>◎</div>
             <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:16 }}>No entries in this period</p>
-            <p style={{ fontSize:13, marginTop:8 }}>Start journaling to see your stats here.</p>
+            <p style={{ fontSize:14, marginTop:8 }}>Start journaling to see your stats here.</p>
           </div>
         )}
         {!loading && !error && stats && (
           <>
             {/* Row 1: Top metrics */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14 }}>
+            <div className="grid-fit" style={{ '--col-min':'200px' }}>
               <StatCard label="Total Entries"   value={stats.totalEntries} icon="📖" big color="var(--accent)" />
               <StatCard label="Days Journaled"  value={stats.daysJournaled} icon="📅" big color="var(--accent)"
                 sub={stats.totalEntries !== stats.daysJournaled ? `${stats.avgEntriesPerActiveDay}×/day avg` : undefined} />
@@ -306,7 +307,7 @@ export default function ArcStats() {
             </div>
 
             {/* Row 2: Writing detail */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14 }}>
+            <div className="grid-fit" style={{ '--col-min':'200px' }}>
               <StatCard label="Total Sentences"  value={stats.totalSentences.toLocaleString()} icon="✦" />
               <StatCard label="Avg Words / Entry" value={stats.avgWordsPerEntry} icon="⊘" />
               <StatCard label="Comments Added"    value={stats.totalComments}    icon="💬" />
@@ -314,7 +315,7 @@ export default function ArcStats() {
             </div>
 
             {/* Row 3: Grades */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:14 }}>
+            <div className="grid-fit" style={{ '--col-min':'220px' }}>
               <StatCard label="Avg Grade" value={stats.avgGrade ? `${stats.avgGrade}/10` : '—'}
                 icon="⭐" color={gradeColor(stats.avgGrade)} />
               <StatCard label="Best Grade"  value={stats.bestGrade  ? `${stats.bestGrade}/10`  : '—'} icon="🏆" color="var(--success)" />
@@ -325,33 +326,33 @@ export default function ArcStats() {
             {filter.days && filter.days >= 30 && <Heatmap heatmapMap={stats.heatmapMap} />}
 
             {/* Row 4: charts */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+            <div className="grid-fit" style={{ '--col-min':'380px' }}>
               <GradeBarChart gradeDistribution={stats.gradeDistribution} />
               <DowChart dowBreakdown={stats.dowBreakdown} peakDay={stats.peakDay} />
             </div>
 
             {/* Monthly + Moods */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+            <div className="grid-fit" style={{ '--col-min':'380px' }}>
               <MonthlyChart monthlyActivity={stats.monthlyActivity} />
               <MoodGrid moodFreq={stats.moodFreq} totalEntries={stats.totalEntries} />
             </div>
 
             {/* Date range summary */}
-            <div className="card" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16 }}>
+            <div className="card grid-fit" style={{ '--col-min':'200px' }}>
               <div>
-                <p style={{ fontSize:10, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--muted)', letterSpacing:'0.07em', marginBottom:6 }}>FIRST ENTRY</p>
+                <p style={{ fontSize:12, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--muted)', letterSpacing:'0.07em', marginBottom:6 }}>FIRST ENTRY</p>
                 <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:14 }}>
                   {stats.firstEntryDate ? format(parseISO(stats.firstEntryDate), 'MMMM d, yyyy') : '—'}
                 </p>
               </div>
               <div>
-                <p style={{ fontSize:10, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--muted)', letterSpacing:'0.07em', marginBottom:6 }}>LAST ENTRY</p>
+                <p style={{ fontSize:12, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--muted)', letterSpacing:'0.07em', marginBottom:6 }}>LAST ENTRY</p>
                 <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:14 }}>
                   {stats.lastEntryDate ? format(parseISO(stats.lastEntryDate), 'MMMM d, yyyy') : '—'}
                 </p>
               </div>
               <div>
-                <p style={{ fontSize:10, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--muted)', letterSpacing:'0.07em', marginBottom:6 }}>CHARACTERS WRITTEN</p>
+                <p style={{ fontSize:12, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--muted)', letterSpacing:'0.07em', marginBottom:6 }}>CHARACTERS WRITTEN</p>
                 <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:14 }}>
                   {stats.totalChars.toLocaleString()}
                 </p>
@@ -360,21 +361,21 @@ export default function ArcStats() {
 
             {/* Longest streak + peak month highlight */}
             {(stats.longestStreak > 1 || stats.peakMonth) && (
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+              <div className="grid-fit" style={{ '--col-min':'320px' }}>
                 {stats.longestStreak > 1 && (
                   <div className="card" style={{ borderColor:'rgba(61,255,181,0.2)', background:'rgba(61,255,181,0.04)' }}>
-                    <p style={{ fontSize:10, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--success)', letterSpacing:'0.07em', marginBottom:6 }}>🔥 LONGEST STREAK</p>
+                    <p style={{ fontSize:12, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--success)', letterSpacing:'0.07em', marginBottom:6 }}>🔥 LONGEST STREAK</p>
                     <p style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:28, color:'var(--success)' }}>{stats.longestStreak} <span style={{ fontSize:14, fontWeight:400 }}>days</span></p>
-                    <p style={{ fontSize:12, color:'var(--muted)', marginTop:4 }}>Consecutive journaling days</p>
+                    <p style={{ fontSize:13, color:'var(--muted)', marginTop:4 }}>Consecutive journaling days</p>
                   </div>
                 )}
                 {stats.peakMonth && (
                   <div className="card" style={{ borderColor:'rgba(106,228,255,0.2)', background:'rgba(106,228,255,0.04)' }}>
-                    <p style={{ fontSize:10, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', marginBottom:6 }}>📅 MOST ACTIVE MONTH</p>
+                    <p style={{ fontSize:12, fontFamily:'var(--font-display)', fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', marginBottom:6 }}>📅 MOST ACTIVE MONTH</p>
                     <p style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22, color:'var(--accent)' }}>
                       {(() => { const [y,m]=stats.peakMonth.split('-'); return format(new Date(Number(y),Number(m)-1,1),'MMMM yyyy'); })()}
                     </p>
-                    <p style={{ fontSize:12, color:'var(--muted)', marginTop:4 }}>
+                    <p style={{ fontSize:13, color:'var(--muted)', marginTop:4 }}>
                       {stats.monthlyActivity.find(m=>m.month===stats.peakMonth)?.count || 0} days journaled
                     </p>
                   </div>
@@ -382,11 +383,12 @@ export default function ArcStats() {
               </div>
             )}
 
-            <p style={{ fontSize:10, color:'var(--muted)', opacity:0.3, textAlign:'center', letterSpacing:'0.08em', paddingBottom:8 }}>
+            <p style={{ fontSize:12, color:'var(--muted)', opacity:0.8, textAlign:'center', letterSpacing:'0.08em', paddingBottom:8 }}>
               ARCJOURNAL · PART OF ARCNODE
             </p>
           </>
         )}
+      </div>
       </div>
     </div>
   );

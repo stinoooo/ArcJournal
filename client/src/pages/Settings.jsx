@@ -5,7 +5,6 @@ import { useToast } from '../context/ToastContext';
 import { userAPI, errorMessage } from '../api';
 import { useVault } from '../context/VaultContext';
 import LegacyLinkCard from '../components/LegacyLinkCard';
-import { LinkArcnodeButton } from '../components/LinkArcnode';
 import { PassphraseFields, passphraseProblem, RecoveryKeyCard } from './Vault';
 import { getUserAge } from '../utils/birthday';
 import Modal from '../components/Modal';
@@ -20,7 +19,7 @@ const GENDERS = [
 ];
 
 export default function Settings() {
-  const { user, session, logout, refreshUser } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -113,8 +112,11 @@ export default function Settings() {
   };
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '32px 40px', maxWidth: 600 }}>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, marginBottom: 32 }}>Settings</h1>
+    <div className="page">
+      <div className="page-inner" style={{ '--page-max': '1120px' }}>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 800, marginBottom: 32 }}>Settings</h1>
+
+      <div className="columns">
 
       {/* Profile */}
       <section className="card" style={{ marginBottom: 24 }}>
@@ -134,7 +136,7 @@ export default function Settings() {
               max={new Date().toISOString().split('T')[0]}
               style={{ colorScheme: 'dark' }} />
             {age !== null && (
-              <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>🎂 Age: {age}</p>
+              <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>🎂 Age: {age}</p>
             )}
           </div>
 
@@ -150,7 +152,7 @@ export default function Settings() {
                     border: `1.5px solid ${profile.gender === value ? 'var(--accent)' : 'var(--border)'}`,
                     background: profile.gender === value ? 'var(--accent-glow)' : 'transparent',
                     color: profile.gender === value ? 'var(--accent)' : 'var(--muted)',
-                    fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 11,
+                    fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12,
                     cursor: 'pointer', transition: 'all 0.15s',
                   }}
                 >
@@ -169,7 +171,7 @@ export default function Settings() {
       {/* Encryption */}
       <section className="card" style={{ marginBottom: 24 }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Encryption</h2>
-        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 20, lineHeight: 1.5 }}>
           Your entries are encrypted on this computer before they are saved. Only your passphrase or recovery key can open them.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -182,19 +184,7 @@ export default function Settings() {
       {/* Account */}
       <section className="card" style={{ marginBottom: 24 }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Arcnode account</h2>
-        {session === 'password' ? (
-          <>
-            <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16, lineHeight: 1.5 }}>
-              You signed in with your ArcJournal 1.x password. Connect an Arcnode account to sign in with
-              passkeys and two-factor authentication; your password then stops working.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' }}>
-              <LinkArcnodeButton />
-              <button className="btn btn-ghost" onClick={async () => { await logout(); navigate('/signin'); }}>Sign out</button>
-            </div>
-          </>
-        ) : <>
-        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 16, lineHeight: 1.5 }}>
           Signed in{user?.email ? <> as <strong style={{ color: 'var(--text)' }}>{user.email}</strong></> : ''}.
           Your email, password and two-factor settings live at{' '}
           <a href="https://backboard.arcnode.dev/account" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>backboard.arcnode.dev</a>.
@@ -205,7 +195,6 @@ export default function Settings() {
             Sign out
           </button>
         </div>
-        </>}
       </section>
 
       {/* About */}
@@ -215,9 +204,9 @@ export default function Settings() {
           <img src={logo} alt="Arcnode" style={{ height: 32 }} />
           <div>
             <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14 }}>ArcJournal v{__APP_VERSION__}</p>
-            <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Part of Arcnode</p>
+            <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 2 }}>Part of Arcnode</p>
             {window.electronAPI?.updates && (
-              <button className="btn btn-ghost" style={{ marginTop: 10, padding: '4px 12px', fontSize: 12 }}
+              <button className="btn btn-ghost" style={{ marginTop: 10, padding: '4px 12px', fontSize: 13 }}
                 onClick={async () => {
                   await window.electronAPI.updates.check();
                   toast.info('Checking for updates. A banner appears when one is out.');
@@ -243,7 +232,7 @@ export default function Settings() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
             <div>
               <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Delete all entries</p>
-              <p style={{ fontSize: 12, color: 'var(--muted)' }}>Permanently remove all journal entries. Cannot be undone.</p>
+              <p style={{ fontSize: 13, color: 'var(--muted)' }}>Permanently remove all journal entries. Cannot be undone.</p>
             </div>
             <button className="btn btn-danger" style={{ flexShrink: 0 }} onClick={() => setModal('deleteEntries')}>
               Delete Entries
@@ -253,7 +242,7 @@ export default function Settings() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
             <div>
               <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Delete account</p>
-              <p style={{ fontSize: 12, color: 'var(--muted)' }}>Permanently delete your account and all data. Cannot be undone.</p>
+              <p style={{ fontSize: 13, color: 'var(--muted)' }}>Permanently delete your account and all data. Cannot be undone.</p>
             </div>
             <button className="btn btn-danger" style={{ flexShrink: 0 }} onClick={() => setModal('deleteAccount')}>
               Delete Account
@@ -261,6 +250,8 @@ export default function Settings() {
           </div>
         </div>
       </section>
+      </div>
+      </div>
 
       <Modal isOpen={modal === 'deleteEntries'} title="Delete All Entries?"
         message="This permanently deletes all your journal entries. Your account stays."
@@ -284,7 +275,7 @@ export default function Settings() {
             <PassphraseFields value={security.value} confirm={security.confirm} label="New passphrase"
               onValue={(v) => setSecurity((s) => ({ ...s, value: v }))}
               onConfirm={(v) => setSecurity((s) => ({ ...s, confirm: v }))} />
-            {security.error && <p style={{ color: 'var(--error)', fontSize: 13 }}>{security.error}</p>}
+            {security.error && <p style={{ color: 'var(--error)', fontSize: 14 }}>{security.error}</p>}
             <button type="submit" hidden />
           </form>
         </Modal>
@@ -300,7 +291,7 @@ export default function Settings() {
               <label htmlFor="recovery-passphrase">Passphrase</label>
               <input id="recovery-passphrase" type="password" value={security.current} autoComplete="current-password"
                 onChange={(e) => setSecurity((s) => ({ ...s, current: e.target.value }))} />
-              {security.error && <p style={{ color: 'var(--error)', fontSize: 13, marginTop: 8 }}>{security.error}</p>}
+              {security.error && <p style={{ color: 'var(--error)', fontSize: 14, marginTop: 8 }}>{security.error}</p>}
             </form>
           )}
         </Modal>

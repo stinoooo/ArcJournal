@@ -32,7 +32,7 @@ function StandingBar({ warnings }) {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <label style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--muted)', textTransform: 'uppercase', margin: 0 }}>
+        <label style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--muted)', textTransform: 'uppercase', margin: 0 }}>
           Standing Score
         </label>
         <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color }}>{label}</span>
@@ -42,9 +42,9 @@ function StandingBar({ warnings }) {
       </div>
       {warnings.length > 0 && (
         <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-          {severe   > 0 && <span style={{ fontSize: 12, background: 'rgba(255,92,122,0.12)', color: '#FF5C7A', padding: '3px 10px', borderRadius: 20, border: '1px solid rgba(255,92,122,0.25)' }}>🚨 {severe} severe</span>}
-          {standard > 0 && <span style={{ fontSize: 12, background: 'rgba(245,158,11,0.12)', color: '#f59e0b', padding: '3px 10px', borderRadius: 20, border: '1px solid rgba(245,158,11,0.25)' }}>⚠ {standard} warning{standard !== 1 ? 's' : ''}</span>}
-          {notices  > 0 && <span style={{ fontSize: 12, background: 'rgba(106,228,255,0.1)',  color: '#6AE4FF', padding: '3px 10px', borderRadius: 20, border: '1px solid var(--border)' }}>ℹ {notices} notice{notices !== 1 ? 's' : ''}</span>}
+          {severe   > 0 && <span style={{ fontSize: 13, background: 'rgba(255,92,122,0.12)', color: '#FF5C7A', padding: '3px 10px', borderRadius: 20, border: '1px solid rgba(255,92,122,0.25)' }}>🚨 {severe} severe</span>}
+          {standard > 0 && <span style={{ fontSize: 13, background: 'rgba(245,158,11,0.12)', color: '#f59e0b', padding: '3px 10px', borderRadius: 20, border: '1px solid rgba(245,158,11,0.25)' }}>⚠ {standard} warning{standard !== 1 ? 's' : ''}</span>}
+          {notices  > 0 && <span style={{ fontSize: 13, background: 'rgba(106,228,255,0.1)',  color: '#6AE4FF', padding: '3px 10px', borderRadius: 20, border: '1px solid var(--border)' }}>ℹ {notices} notice{notices !== 1 ? 's' : ''}</span>}
         </div>
       )}
     </div>
@@ -74,12 +74,13 @@ export default function AccountStanding() {
   }, []);
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '32px 40px', maxWidth: 600 }}>
+    <div className="page">
+      <div className="page-inner" style={{ '--page-max': '960px' }}>
 
       <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, marginBottom: 6 }}>
         Account Standing
       </h1>
-      <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 32 }}>
+      <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 32 }}>
         Your moderation history and account health.
       </p>
 
@@ -102,18 +103,18 @@ export default function AccountStanding() {
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: status.color }}>
                   {status.label}
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 2 }}>{status.description}</div>
+                <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 2 }}>{status.description}</div>
               </div>
             </div>
 
             {user?.statusReason && (
               <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-                <label style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--muted)', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
+                <label style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--muted)', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
                   Reason
                 </label>
                 <p style={{ fontSize: 14, color: 'var(--text)', margin: 0 }}>{user.statusReason}</p>
                 {user.statusExpiry && (
-                  <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>Until {fmtDate(user.statusExpiry)}</p>
+                  <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>Until {fmtDate(user.statusExpiry)}</p>
                 )}
               </div>
             )}
@@ -130,17 +131,17 @@ export default function AccountStanding() {
               <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, marginBottom: 14 }}>Appeal</h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: appeal.adminResponse ? 12 : 0 }}>
                 <span style={{
-                  fontSize: 12, padding: '3px 10px', borderRadius: 20, fontWeight: 700,
+                  fontSize: 13, padding: '3px 10px', borderRadius: 20, fontWeight: 700,
                   background: appeal.status === 'pending'  ? 'rgba(245,158,11,0.12)'  : appeal.status === 'approved' ? 'rgba(61,255,181,0.1)' : 'rgba(255,92,122,0.12)',
                   color:      appeal.status === 'pending'  ? '#f59e0b'                : appeal.status === 'approved' ? '#3DFFB5'              : '#FF5C7A',
                   border:     `1px solid ${appeal.status === 'pending' ? 'rgba(245,158,11,0.25)' : appeal.status === 'approved' ? 'rgba(61,255,181,0.25)' : 'rgba(255,92,122,0.25)'}`,
                 }}>
                   {appeal.status === 'pending' ? '⏳ Under Review' : appeal.status === 'approved' ? '✓ Approved' : '✕ Denied'}
                 </span>
-                <span style={{ fontSize: 12, color: 'var(--muted)' }}>Submitted {fmtDate(appeal.createdAt)}</span>
+                <span style={{ fontSize: 13, color: 'var(--muted)' }}>Submitted {fmtDate(appeal.createdAt)}</span>
               </div>
               {appeal.adminResponse && (
-                <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', fontSize: 13, color: 'var(--muted)', lineHeight: 1.6, border: '1px solid var(--border)' }}>
+                <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, border: '1px solid var(--border)' }}>
                   <strong style={{ color: 'var(--text)' }}>Admin response: </strong>{appeal.adminResponse}
                 </div>
               )}
@@ -152,7 +153,7 @@ export default function AccountStanding() {
             <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>
               Warning History
               {warnings.length > 0 && (
-                <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--muted)', fontWeight: 400 }}>
+                <span style={{ marginLeft: 8, fontSize: 13, color: 'var(--muted)', fontWeight: 400 }}>
                   {warnings.length} total
                 </span>
               )}
@@ -161,7 +162,7 @@ export default function AccountStanding() {
             {warnings.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted)' }}>
                 <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.4 }}>🏆</div>
-                <p style={{ fontSize: 13, margin: 0 }}>No warnings on your account.</p>
+                <p style={{ fontSize: 14, margin: 0 }}>No warnings on your account.</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -177,14 +178,14 @@ export default function AccountStanding() {
                       <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>{sc.icon}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, gap: 8 }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: sc.color, fontFamily: 'var(--font-display)' }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: sc.color, fontFamily: 'var(--font-display)' }}>
                             {sc.label}
                           </span>
-                          <span style={{ fontSize: 11, color: 'var(--muted)', flexShrink: 0 }}>{fmtDate(w.createdAt)}</span>
+                          <span style={{ fontSize: 12, color: 'var(--muted)', flexShrink: 0 }}>{fmtDate(w.createdAt)}</span>
                         </div>
-                        <p style={{ fontSize: 13, color: 'var(--text)', margin: 0, lineHeight: 1.5 }}>{w.reason}</p>
+                        <p style={{ fontSize: 14, color: 'var(--text)', margin: 0, lineHeight: 1.5 }}>{w.reason}</p>
                         {w.acknowledged && (
-                          <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4, margin: '4px 0 0' }}>
+                          <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, margin: '4px 0 0' }}>
                             Acknowledged {fmtDate(w.acknowledgedAt)}
                           </p>
                         )}
@@ -197,11 +198,12 @@ export default function AccountStanding() {
           </section>
 
           {/* Info footer */}
-          <p style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.7, textAlign: 'center' }}>
+          <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.7, textAlign: 'center' }}>
             If you believe a moderation action was made in error, you can submit an appeal from the Account Status page.
           </p>
         </>
       )}
+      </div>
     </div>
   );
 }

@@ -37,13 +37,13 @@ export default function AnnouncementBanner() {
         return (
           <div key={a._id} style={{ background: s.bg, borderBottom: `1px solid ${s.border}44`, padding: '9px 20px', display: 'flex', alignItems: 'center', gap: 10, minHeight: 38 }}>
             <span style={{ fontSize: 14 }}>{s.icon}</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: s.border, letterSpacing: '0.08em', fontFamily: 'var(--font-display)', minWidth: 'max-content' }}>{s.label.toUpperCase()}</span>
-            <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', lineHeight: 1.4 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: s.border, letterSpacing: '0.08em', fontFamily: 'var(--font-display)', minWidth: 'max-content' }}>{s.label.toUpperCase()}</span>
+            <span style={{ flex: 1, fontSize: 14, color: 'var(--text)', lineHeight: 1.4 }}>
               <strong>{a.title}</strong>
               {a.message && a.message !== a.title && ` — ${a.message}`}
             </span>
             {a.dismissible && (
-              <button onClick={() => dismiss(a._id)} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 4px', opacity: 0.6 }}
+              <button onClick={() => dismiss(a._id)} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 4px', opacity: 0.8 }}
                 onMouseEnter={e => e.target.style.opacity = 1}
                 onMouseLeave={e => e.target.style.opacity = 0.6}
               >✕</button>

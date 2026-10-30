@@ -239,16 +239,16 @@ export default function Journal() {
   return (
     <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
       {/* ─── LEFT SIDEBAR ─── */}
-      <div style={{ width:268, flexShrink:0, background:'var(--surface)', borderRight:'1px solid var(--border)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div style={{ width:'clamp(220px, 22vw, 340px)', flexShrink:0, background:'var(--surface)', borderRight:'1px solid var(--border)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
         {/* Calendar */}
         <div style={{ padding:'14px 12px 10px', borderBottom:'1px solid var(--border)', flexShrink:0 }}>
           <div style={{ display:'flex', alignItems:'center', marginBottom:10 }}>
-            <button className="btn btn-ghost" style={{ padding:'3px 8px', fontSize:13 }} onClick={()=>setCurrentMonth(m=>subMonths(m,1))}>‹</button>
-            <span style={{ flex:1, textAlign:'center', fontFamily:'var(--font-display)', fontWeight:700, fontSize:12 }}>{format(currentMonth,'MMMM yyyy')}</span>
-            <button className="btn btn-ghost" style={{ padding:'3px 8px', fontSize:13 }} onClick={()=>setCurrentMonth(m=>addMonths(m,1))}>›</button>
+            <button className="btn btn-ghost" style={{ padding:'3px 8px', fontSize:14 }} onClick={()=>setCurrentMonth(m=>subMonths(m,1))}>‹</button>
+            <span style={{ flex:1, textAlign:'center', fontFamily:'var(--font-display)', fontWeight:700, fontSize:13 }}>{format(currentMonth,'MMMM yyyy')}</span>
+            <button className="btn btn-ghost" style={{ padding:'3px 8px', fontSize:14 }} onClick={()=>setCurrentMonth(m=>addMonths(m,1))}>›</button>
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:1, marginBottom:2 }}>
-            {DOW.map(d=><div key={d} style={{ textAlign:'center', fontSize:9, color:'var(--muted)', fontFamily:'var(--font-display)', fontWeight:600 }}>{d}</div>)}
+            {DOW.map(d=><div key={d} style={{ textAlign:'center', fontSize:11, color:'var(--muted)', fontFamily:'var(--font-display)', fontWeight:600 }}>{d}</div>)}
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:2 }}>
             {days.map(day=>{
@@ -265,7 +265,7 @@ export default function Journal() {
                     cursor:isFuture?'not-allowed':'pointer',
                     opacity:!inMonth?0.3:isFuture?0.2:1,
                     display:'flex',flexDirection:'column',alignItems:'center',gap:1,transition:'all 0.1s' }}>
-                  <span style={{ fontSize:10, fontWeight:isSel||isTD?700:400,
+                  <span style={{ fontSize:12, fontWeight:isSel||isTD?700:400,
                     color:isSel||isTD?'var(--accent)':isBday?'#FFD166':'var(--text)' }}>
                     {format(day,'d')}
                   </span>
@@ -280,13 +280,13 @@ export default function Journal() {
         {/* Date header */}
         <div style={{ padding:'8px 12px', borderBottom:'1px solid var(--border)', flexShrink:0 }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:7 }}>
-            <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:11, color:'var(--muted)' }}>
+            <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:12, color:'var(--muted)' }}>
               {format(parseISO(selectedDate),'MMM d, yyyy')}
             </span>
-            <button className="btn btn-primary" onClick={startNew} style={{ padding:'4px 10px', fontSize:11 }}>+ New</button>
+            <button className="btn btn-primary" onClick={startNew} style={{ padding:'4px 10px', fontSize:12 }}>+ New</button>
           </div>
           <input type="text" placeholder="Search…" value={search} onChange={e=>setSearch(e.target.value)}
-            style={{ fontSize:12, padding:'5px 10px' }} />
+            style={{ fontSize:13, padding:'5px 10px' }} />
         </div>
 
         {/* Entry list */}
@@ -294,12 +294,12 @@ export default function Journal() {
           {loading && <div style={{ padding:20, display:'flex', justifyContent:'center' }}><Spinner size={18}/></div>}
           {!loading && isNewEntry && (
             <div style={{ margin:10, padding:'10px 12px', background:'var(--accent-glow)', border:'1.5px solid var(--accent)', borderRadius:'var(--radius-sm)' }}>
-              <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:12, color:'var(--accent)' }}>+ New Entry</p>
-              <p style={{ fontSize:11, color:'var(--muted)', marginTop:2 }}>Unsaved</p>
+              <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:13, color:'var(--accent)' }}>+ New Entry</p>
+              <p style={{ fontSize:12, color:'var(--muted)', marginTop:2 }}>Unsaved</p>
             </div>
           )}
           {!loading && !isNewEntry && filtered.length===0 && (
-            <p style={{ padding:'20px 14px', textAlign:'center', color:'var(--muted)', fontSize:12, lineHeight:1.7 }}>
+            <p style={{ padding:'20px 14px', textAlign:'center', color:'var(--muted)', fontSize:13, lineHeight:1.7 }}>
               {search?'No matches.':'No entries for this day.\nPress + New to start.'}
             </p>
           )}
@@ -316,19 +316,19 @@ export default function Journal() {
                   background:isActive?'var(--accent-glow)':'transparent',
                   borderBottom:'1px solid rgba(255,255,255,0.03)', transition:'all 0.1s' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:3 }}>
-                  <span style={{ flex:1, fontFamily:'var(--font-display)', fontWeight:700, fontSize:12,
+                  <span style={{ flex:1, fontFamily:'var(--font-display)', fontWeight:700, fontSize:13,
                     color:isActive?'var(--accent)':'var(--text)',
                     whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
                     {entry.title||`Entry ${idx+1}`}
                   </span>
                   <img src={emotionImageSrc(entry.emoji)} alt="" style={{ width:13,height:13,objectFit:'contain',flexShrink:0 }} />
-                  <span style={{ fontSize:10, color:gradeColor(entry.grade), fontFamily:'var(--font-display)', fontWeight:700, flexShrink:0 }}>{entry.grade}</span>
+                  <span style={{ fontSize:12, color:gradeColor(entry.grade), fontFamily:'var(--font-display)', fontWeight:700, flexShrink:0 }}>{entry.grade}</span>
                 </div>
-                {preview && <p style={{ fontSize:11,color:'var(--muted)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:1.4 }}>{preview}</p>}
+                {preview && <p style={{ fontSize:12,color:'var(--muted)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:1.4 }}>{preview}</p>}
                 <div style={{ display:'flex', gap:6, marginTop:2 }}>
-                  <span style={{ fontSize:10, color:'var(--muted)', opacity:0.5 }}>{entry.lastEditedAt?'Edited':'Created'} {t}</span>
-                  {(entry.comments||[]).length>0 && <span style={{ fontSize:10, color:'#FFD166', opacity:0.7 }}>💬{entry.comments.length}</span>}
-                  {(entry.attachments||[]).length>0 && <span style={{ fontSize:10, color:'var(--muted)', opacity:0.6 }}>📎{entry.attachments.length}</span>}
+                  <span style={{ fontSize:12, color:'var(--muted)', opacity:0.8 }}>{entry.lastEditedAt?'Edited':'Created'} {t}</span>
+                  {(entry.comments||[]).length>0 && <span style={{ fontSize:12, color:'#FFD166', opacity:0.7 }}>💬{entry.comments.length}</span>}
+                  {(entry.attachments||[]).length>0 && <span style={{ fontSize:12, color:'var(--muted)', opacity:0.8 }}>📎{entry.attachments.length}</span>}
                 </div>
               </div>
             );
@@ -356,17 +356,17 @@ export default function Journal() {
             )}
 
             {/* Autosave label */}
-            {autoSaveLabel==='saving' && <span className="autosave-pulse" style={{ fontSize:11, color:'var(--muted)', flexShrink:0 }}>Saving…</span>}
-            {autoSaveLabel==='saved'  && <span style={{ fontSize:11, color:'var(--success)', flexShrink:0 }}>✓ Autosaved</span>}
+            {autoSaveLabel==='saving' && <span className="autosave-pulse" style={{ fontSize:12, color:'var(--muted)', flexShrink:0 }}>Saving…</span>}
+            {autoSaveLabel==='saved'  && <span style={{ fontSize:12, color:'var(--success)', flexShrink:0 }}>✓ Autosaved</span>}
             {selectedEntry?.lastEditedAt && !autoSaveLabel && (
-              <span style={{ fontSize:10, color:'var(--muted)', opacity:0.5, flexShrink:0 }}>
+              <span style={{ fontSize:12, color:'var(--muted)', opacity:0.8, flexShrink:0 }}>
                 Edited {format(new Date(selectedEntry.lastEditedAt),'h:mm a')}
               </span>
             )}
 
             {/* Read-only badge */}
             {!isEditing && !isNewEntry && (
-              <span style={{ fontSize:10, color:'var(--muted)', background:'var(--surface2)', padding:'2px 8px',
+              <span style={{ fontSize:12, color:'var(--muted)', background:'var(--surface2)', padding:'2px 8px',
                 borderRadius:100, border:'1px solid var(--border)', flexShrink:0 }}>
                 👁 Preview
               </span>
@@ -376,7 +376,7 @@ export default function Journal() {
             {isEditing && (
               <div style={{ display:'flex', alignItems:'center', gap:5, flexShrink:0 }}>
                 <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:16, color:gradeColor(entryForm.grade) }}>{entryForm.grade}</span>
-                <span style={{ color:'var(--muted)', fontSize:12 }}>/10</span>
+                <span style={{ color:'var(--muted)', fontSize:13 }}>/10</span>
                 <input type="range" min="1" max="10" value={entryForm.grade}
                   onChange={e=>setEntryForm(p=>({...p,grade:Number(e.target.value)}))}
                   style={{ width:60, accentColor:'var(--accent)', cursor:'pointer', background:'transparent' }} />
@@ -393,7 +393,7 @@ export default function Journal() {
             <div style={{ display:'flex', gap:5, flexShrink:0 }}>
               {/* Comments */}
               <button className="btn btn-ghost"
-                style={{ padding:'5px 9px', fontSize:11,
+                style={{ padding:'5px 9px', fontSize:12,
                   borderColor:showComments?'var(--accent)':'var(--border)',
                   color:showComments?'var(--accent)':'var(--muted)' }}
                 onClick={()=>setShowComments(v=>!v)} title="Comments">
@@ -402,12 +402,12 @@ export default function Journal() {
 
               {/* Share */}
               <div style={{ position:'relative' }}>
-                <button className="btn btn-ghost" style={{ padding:'5px 9px', fontSize:11 }} onClick={()=>setShowShareMenu(v=>!v)}>↑</button>
+                <button className="btn btn-ghost" style={{ padding:'5px 9px', fontSize:12 }} onClick={()=>setShowShareMenu(v=>!v)}>↑</button>
                 {showShareMenu && (
                   <div style={{ position:'absolute', top:34, right:0, background:'var(--surface)', border:'1px solid var(--border)',
                     borderRadius:8, padding:6, zIndex:50, minWidth:155, boxShadow:'0 8px 24px rgba(0,0,0,0.4)' }}>
                     {[['📋 Copy text', exportText],['⬇ Export HTML', exportHTML]].map(([lbl,fn])=>(
-                      <button key={lbl} onClick={fn} style={{ display:'block', width:'100%', textAlign:'left', padding:'8px 12px', background:'transparent', border:'none', color:'var(--text)', fontSize:12, cursor:'pointer', borderRadius:4 }}
+                      <button key={lbl} onClick={fn} style={{ display:'block', width:'100%', textAlign:'left', padding:'8px 12px', background:'transparent', border:'none', color:'var(--text)', fontSize:13, cursor:'pointer', borderRadius:4 }}
                         onMouseEnter={e=>{e.currentTarget.style.background='var(--surface2)'}}
                         onMouseLeave={e=>{e.currentTarget.style.background='transparent'}}>{lbl}</button>
                     ))}
@@ -417,13 +417,13 @@ export default function Journal() {
 
               {/* Delete */}
               {selectedEntry && (
-                <button className="btn btn-danger" style={{ padding:'5px 9px', fontSize:11 }}
+                <button className="btn btn-danger" style={{ padding:'5px 9px', fontSize:12 }}
                   onClick={()=>setDeleteModal(selectedEntry._id)}>✕</button>
               )}
 
               {/* Edit / Save / Cancel */}
               {!isEditing && !isNewEntry && (
-                <button className="btn btn-primary" style={{ padding:'5px 14px', fontSize:12 }}
+                <button className="btn btn-primary" style={{ padding:'5px 14px', fontSize:13 }}
                   onClick={enterEditMode}>
                   ✎ Edit
                 </button>
@@ -431,12 +431,12 @@ export default function Journal() {
               {isEditing && (
                 <>
                   {!isNewEntry && (
-                    <button className="btn btn-ghost" style={{ padding:'5px 12px', fontSize:12 }}
+                    <button className="btn btn-ghost" style={{ padding:'5px 12px', fontSize:13 }}
                       onClick={() => { setIsEditing(false); openEntry(selectedEntry); }}>
                       Cancel
                     </button>
                   )}
-                  <button className="btn btn-primary" style={{ padding:'5px 14px', fontSize:12 }}
+                  <button className="btn btn-primary" style={{ padding:'5px 14px', fontSize:13 }}
                     disabled={saving} onClick={()=>saveEntry(false)}>
                     {saving ? <Spinner size={13} color="#0B1020" /> : isNewEntry ? 'Create' : 'Save'}
                   </button>
@@ -446,7 +446,7 @@ export default function Journal() {
               {/* Attach (edit only) */}
               {isEditing && (
                 <>
-                  <button className="btn btn-ghost" style={{ padding:'5px 9px', fontSize:11 }}
+                  <button className="btn btn-ghost" style={{ padding:'5px 9px', fontSize:12 }}
                     onClick={()=>fileInputRef.current?.click()} title="Attach file">📎</button>
                   <input ref={fileInputRef} type="file" multiple style={{ display:'none' }} onChange={handleFileAdd} />
                 </>
@@ -479,14 +479,14 @@ export default function Journal() {
                 <div style={{ padding:'6px 16px', borderBottom:'1px solid var(--border)', flexShrink:0,
                   display:'flex', alignItems:'center', gap:12, background:'rgba(255,255,255,0.015)' }}>
                   <img src={emotionImageSrc(selectedEntry.emoji)} alt="" style={{ width:18,height:18,objectFit:'contain' }} />
-                  <span style={{ fontSize:11, color:emotionColor(selectedEntry.emoji), fontFamily:'var(--font-display)', fontWeight:700 }}>
+                  <span style={{ fontSize:12, color:emotionColor(selectedEntry.emoji), fontFamily:'var(--font-display)', fontWeight:700 }}>
                     {emotionLabel(selectedEntry.emoji)}
                   </span>
-                  <span style={{ fontSize:11, color:gradeColor(selectedEntry.grade), fontFamily:'var(--font-display)', fontWeight:700 }}>
+                  <span style={{ fontSize:12, color:gradeColor(selectedEntry.grade), fontFamily:'var(--font-display)', fontWeight:700 }}>
                     {selectedEntry.grade}/10
                   </span>
                   <span style={{ flex:1 }} />
-                  <span style={{ fontSize:11, color:'var(--muted)', opacity:0.5 }}>
+                  <span style={{ fontSize:12, color:'var(--muted)', opacity:0.8 }}>
                     {selectedEntry.lastEditedAt
                       ? `Last edited ${format(new Date(selectedEntry.lastEditedAt), 'MMM d, h:mm a')}`
                       : `Created ${format(new Date(selectedEntry.createdAt), 'MMM d, h:mm a')}`}
@@ -526,12 +526,12 @@ export default function Journal() {
               {isEditing && (
                 <div style={{ padding:'5px 14px', borderTop:'1px solid var(--border)',
                   display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
-                  <span style={{ fontSize:10, color:'var(--muted)', fontFamily:'var(--font-display)', letterSpacing:'0.06em' }}>BG</span>
+                  <span style={{ fontSize:12, color:'var(--muted)', fontFamily:'var(--font-display)', letterSpacing:'0.06em' }}>BG</span>
                   {['','#0B1020','#0d1a0d','#0d0d1a','#1a0d0d','#1a1a00','#0d1a1a','#160a20','#1a1000'].map(c=>(
                     <button key={c||'x'} onClick={()=>setEntryForm(p=>({...p,bgColor:c}))} title={c||'Default'}
                       style={{ width:16,height:16,borderRadius:3,
                         border:entryForm.bgColor===c?'2px solid var(--accent)':c?'1px solid rgba(255,255,255,0.1)':'1.5px dashed var(--muted)',
-                        background:c||'transparent', cursor:'pointer', fontSize:9, color:'var(--muted)',
+                        background:c||'transparent', cursor:'pointer', fontSize:11, color:'var(--muted)',
                         display:'flex',alignItems:'center',justifyContent:'center' }}>
                       {!c&&'×'}
                     </button>
@@ -557,7 +557,7 @@ export default function Journal() {
         <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:14, color:'var(--muted)' }}>
           <div style={{ fontSize:44, opacity:0.15 }}>📖</div>
           <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:15 }}>{format(parseISO(selectedDate),'MMMM d, yyyy')}</p>
-          <p style={{ fontSize:12, opacity:0.6 }}>{dateEntries.length>0?'Select an entry to read it':'No entries yet — press + New'}</p>
+          <p style={{ fontSize:13, opacity:0.6 }}>{dateEntries.length>0?'Select an entry to read it':'No entries yet — press + New'}</p>
           <button className="btn btn-primary" onClick={startNew}>+ New Entry</button>
         </div>
       )}
@@ -577,11 +577,11 @@ function AttachmentTile({ att, onRemove }) {
         ? <img src={att.data} alt={att.name} style={{ width:76,height:76,objectFit:'cover',borderRadius:6,border:'1px solid var(--border)',display:'block' }} />
         : <div style={{ width:76,height:76,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:6,gap:3,padding:4 }}>
             <span style={{ fontSize:22 }}>📄</span>
-            <span style={{ fontSize:9,color:'var(--muted)',textAlign:'center',wordBreak:'break-all',lineHeight:1.2,overflow:'hidden',maxHeight:28 }}>{att.name}</span>
-            <span style={{ fontSize:9,color:'var(--muted)',opacity:0.5 }}>{fmtSize(att.size)}</span>
+            <span style={{ fontSize:11,color:'var(--muted)',textAlign:'center',wordBreak:'break-all',lineHeight:1.2,overflow:'hidden',maxHeight:28 }}>{att.name}</span>
+            <span style={{ fontSize:11,color:'var(--muted)',opacity:0.8 }}>{fmtSize(att.size)}</span>
           </div>}
       {onRemove && (
-        <button onClick={onRemove} style={{ position:'absolute',top:-5,right:-5,width:16,height:16,borderRadius:'50%',background:'var(--error)',border:'none',color:'#fff',fontSize:9,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
+        <button onClick={onRemove} style={{ position:'absolute',top:-5,right:-5,width:16,height:16,borderRadius:'50%',background:'var(--error)',border:'none',color:'#fff',fontSize:11,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
       )}
     </div>
   );

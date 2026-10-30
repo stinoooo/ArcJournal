@@ -28,12 +28,12 @@ export default function UpdateBanner() {
 
   return (
     <div role="status" style={{
-      display: 'flex', alignItems: 'center', gap: 12, padding: '8px 16px', fontSize: 13,
+      display: 'flex', alignItems: 'center', gap: 12, padding: '8px 16px', fontSize: 14,
       background: 'var(--success-glow)', borderBottom: '1px solid var(--border)', color: 'var(--text)',
     }}>
       <span style={{ flex: 1 }}>{text}</span>
       {button && (
-        <button className="btn btn-primary" style={{ padding: '4px 12px', fontSize: 12 }} onClick={() => updates.install()}>
+        <button className="btn btn-primary" style={{ padding: '4px 12px', fontSize: 13 }} onClick={() => updates.install()}>
           {button}
         </button>
       )}

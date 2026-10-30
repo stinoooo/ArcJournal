@@ -70,7 +70,8 @@ export default function Dashboard() {
   if (loading) return <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}><Spinner size={32} /></div>;
 
   return (
-    <div style={{ flex:1, overflowY:'auto', padding:'24px 36px' }}>
+    <div className="page">
+      <div className="page-inner" style={{ '--page-max': '1200px' }}>
 
       {/* Birthday banner */}
       {isBirthday && (
@@ -82,9 +83,9 @@ export default function Dashboard() {
           <img src="birthday.png" alt="🎂" style={{ width:44, height:44, objectFit:'contain', flexShrink:0 }} onError={e=>{e.currentTarget.style.display='none'}} />
           <div>
             <h3 style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:15, color:'#FFD166', marginBottom:2 }}>
-              🎂 Happy Birthday, {displayName}!{age && <span style={{ fontWeight:400, fontSize:12, color:'rgba(255,209,102,0.6)', marginLeft:8 }}>Year {age} 🎉</span>}
+              🎂 Happy Birthday, {displayName}!{age && <span style={{ fontWeight:400, fontSize:13, color:'rgba(255,209,102,0.6)', marginLeft:8 }}>Year {age} 🎉</span>}
             </h3>
-            <p style={{ fontSize:12, color:'rgba(255,209,102,0.6)' }}>Special birthday reflection prompts are waiting below!</p>
+            <p style={{ fontSize:13, color:'rgba(255,209,102,0.6)' }}>Special birthday reflection prompts are waiting below!</p>
           </div>
         </div>
       )}
@@ -94,11 +95,11 @@ export default function Dashboard() {
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:4 }}>
           <img src={emotionImageSrc(entry.emoji)} alt="" style={{ width:44, height:44, objectFit:'contain' }} />
           <div>
-            <p style={{ fontSize:11, color:'var(--muted)', letterSpacing:'0.08em', fontFamily:'var(--font-display)', textTransform:'uppercase' }}>{isBirthday?'🎂 Your Birthday':'Today'}</p>
-            <h1 style={{ fontFamily:'var(--font-display)', fontSize:20, fontWeight:800 }}>{displayDate}</h1>
+            <p style={{ fontSize:12, color:'var(--muted)', letterSpacing:'0.08em', fontFamily:'var(--font-display)', textTransform:'uppercase' }}>{isBirthday?'🎂 Your Birthday':'Today'}</p>
+            <h1 style={{ fontFamily:'var(--font-display)', fontSize:26, fontWeight:800 }}>{displayDate}</h1>
           </div>
         </div>
-        <p style={{ color:'var(--muted)', fontSize:14 }}>
+        <p style={{ color:'var(--muted)', fontSize:16 }}>
           {isBirthday ? `${greeting}, ${displayName}! What a special day — write all about it 🎉` : `${greeting}, ${displayName}. How was your day?`}
         </p>
       </div>
@@ -106,14 +107,14 @@ export default function Dashboard() {
       {/* Today's entries count */}
       {todayEntries.length > 0 && (
         <div style={{ marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
-          <span style={{ fontSize:12, color:'var(--muted)' }}>📖 {todayEntries.length} {todayEntries.length===1?'entry':'entries'} written today</span>
-          <button className="btn btn-ghost" style={{ padding:'4px 12px', fontSize:11 }} onClick={() => navigate('/app/journal')}>
+          <span style={{ fontSize:13, color:'var(--muted)' }}>📖 {todayEntries.length} {todayEntries.length===1?'entry':'entries'} written today</span>
+          <button className="btn btn-ghost" style={{ padding:'4px 12px', fontSize:12 }} onClick={() => navigate('/app/journal')}>
             View in Journal →
           </button>
         </div>
       )}
 
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 260px', gap:20, maxWidth:900 }}>
+      <div className="dashboard-grid">
         {/* Main editor */}
         <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
           <div>
@@ -127,7 +128,7 @@ export default function Dashboard() {
             <label>Write about your day</label>
             <textarea placeholder="Write about your day, your thoughts, your feelings…" value={entry.content}
               onChange={e=>setEntry(p=>({...p,content:e.target.value}))}
-              style={{ minHeight: isBirthday?150:200, lineHeight:1.8 }} />
+              style={{ minHeight: isBirthday?200:320, fontSize:16, lineHeight:1.8 }} />
           </div>
 
           {/* Birthday prompts */}
@@ -135,10 +136,10 @@ export default function Dashboard() {
             <div style={{ background:'linear-gradient(135deg,rgba(255,209,102,0.06),rgba(255,107,157,0.06))', border:'1px solid rgba(255,209,102,0.2)', borderRadius:'var(--radius)', padding:18 }}>
               <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
                 <img src="birthday.png" alt="" style={{ width:20, height:20, objectFit:'contain' }} onError={e=>{e.currentTarget.style.display='none'}} />
-                <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:12, color:'#FFD166', letterSpacing:'0.05em', textTransform:'uppercase' }}>Birthday Reflections</span>
+                <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:13, color:'#FFD166', letterSpacing:'0.05em', textTransform:'uppercase' }}>Birthday Reflections</span>
               </div>
               {BIRTHDAY_PROMPTS.map((p,i) => (
-                <div key={i} style={{ padding:'8px 12px', background:'rgba(255,209,102,0.05)', border:'1px solid rgba(255,209,102,0.1)', borderRadius:'var(--radius-sm)', fontSize:12, color:'rgba(255,209,102,0.75)', fontStyle:'italic', marginBottom:8 }}>
+                <div key={i} style={{ padding:'8px 12px', background:'rgba(255,209,102,0.05)', border:'1px solid rgba(255,209,102,0.1)', borderRadius:'var(--radius-sm)', fontSize:13, color:'rgba(255,209,102,0.75)', fontStyle:'italic', marginBottom:8 }}>
                   {i+1}. {p}
                 </div>
               ))}
@@ -159,7 +160,7 @@ export default function Dashboard() {
             </div>
             <input type="range" min="1" max="10" value={entry.grade} onChange={e=>setEntry(p=>({...p,grade:Number(e.target.value)}))}
               style={{ width:'100%', marginTop:10, accentColor:'var(--accent)', cursor:'pointer', background:'transparent' }} />
-            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--muted)', marginTop:2 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, color:'var(--muted)', marginTop:2 }}>
               <span>Rough</span><span>Amazing</span>
             </div>
           </div>
@@ -173,17 +174,18 @@ export default function Dashboard() {
           </button>
 
           {todayEntries.length > 0 && (
-            <p style={{ fontSize:11, color:'var(--muted)', textAlign:'center' }}>This will create a new entry for today.</p>
+            <p style={{ fontSize:12, color:'var(--muted)', textAlign:'center' }}>This will create a new entry for today.</p>
           )}
 
           {isBirthday && (
             <div style={{ background:'rgba(255,209,102,0.06)', border:'1px solid rgba(255,209,102,0.2)', borderRadius:'var(--radius-sm)', padding:12, textAlign:'center' }}>
               <img src="birthday.png" alt="🎂" style={{ width:32, height:32, objectFit:'contain', marginBottom:4 }} onError={e=>{e.currentTarget.style.display='none'}} />
-              <p style={{ fontSize:12, color:'#FFD166', fontFamily:'var(--font-display)', fontWeight:700 }}>🎂 Happy Birthday!</p>
-              {age && <p style={{ fontSize:11, color:'rgba(255,209,102,0.5)', marginTop:2 }}>Year {age}</p>}
+              <p style={{ fontSize:13, color:'#FFD166', fontFamily:'var(--font-display)', fontWeight:700 }}>🎂 Happy Birthday!</p>
+              {age && <p style={{ fontSize:12, color:'rgba(255,209,102,0.5)', marginTop:2 }}>Year {age}</p>}
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

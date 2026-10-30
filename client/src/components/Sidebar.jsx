@@ -25,7 +25,7 @@ export default function Sidebar() {
   const { lock } = useVault();
   const handleLogout = async () => { await logout(); toast.info('Signed out'); navigate('/signin'); };
 
-  const footerButton = { flex: 1, padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: 13, fontFamily: 'var(--font-display)', transition: 'all var(--transition)' };
+  const footerButton = { flex: 1, padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: 14, fontFamily: 'var(--font-display)', transition: 'all var(--transition)' };
   const hoverOn = (e) => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.borderColor = 'var(--text)'; };
   const hoverOff = (e) => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--border)'; };
 
@@ -43,7 +43,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div style={{ paddingLeft: 8, paddingBottom: 20, borderBottom: '1px solid var(--border)', marginBottom: 12 }}>
         <img src={logo} alt="Arcnode" style={{ height: 28, display: 'block', marginBottom: 6 }} />
-        <span style={{ fontSize: 10, color: 'var(--muted)', letterSpacing: '0.08em', fontFamily: 'var(--font-display)' }}>ARCJOURNAL</span>
+        <span style={{ fontSize: 12, color: 'var(--muted)', letterSpacing: '0.08em', fontFamily: 'var(--font-display)' }}>ARCJOURNAL</span>
       </div>
 
       {/* Nav */}
@@ -76,14 +76,14 @@ export default function Sidebar() {
       {/* User footer */}
       <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ paddingLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-glow)', border: '1px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--accent)', flexShrink: 0 }}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-glow)', border: '1px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'var(--accent)', flexShrink: 0 }}>
             {displayName[0]?.toUpperCase() || '?'}
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {isBirthday ? `🎂 ${displayName}` : displayName}
             </div>
-            {isAdmin && <div style={{ fontSize: 10, color: '#7c3aed', fontWeight: 700, letterSpacing: '0.06em' }}>ADMIN</div>}
+            {isAdmin && <div style={{ fontSize: 12, color: '#7c3aed', fontWeight: 700, letterSpacing: '0.06em' }}>ADMIN</div>}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>

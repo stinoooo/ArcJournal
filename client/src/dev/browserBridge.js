@@ -15,31 +15,15 @@ if (!window.electronAPI) {
         sessionStorage.setItem(KEY, name);
       },
       cancel: async () => {},
-      signOut: async () => { sessionStorage.removeItem(KEY); sessionStorage.removeItem('arcjournal-dev-password'); },
-      isSignedIn: async () => !!sessionStorage.getItem(KEY) || !!sessionStorage.getItem('arcjournal-dev-password'),
-      getAccessToken: async () => sessionStorage.getItem('arcjournal-dev-password')
-        || (sessionStorage.getItem(KEY) ? `dev:${sessionStorage.getItem(KEY)}` : null),
-      setPasswordSession: async (token) => sessionStorage.setItem('arcjournal-dev-password', token),
-      async startLink() {
-        const name = window.prompt('Link as (dev user name)', 'tester');
-        if (!name) throw new Error('Sign-in cancelled.');
-        window.__pendingLink = name;
-        return `dev:${name}`;
-      },
-      async finishLink() {
-        sessionStorage.removeItem('arcjournal-dev-password');
-        sessionStorage.setItem(KEY, window.__pendingLink);
-      },
-      discardLink: async () => { window.__pendingLink = null; },
+      signOut: async () => { sessionStorage.removeItem(KEY); },
+      isSignedIn: async () => !!sessionStorage.getItem(KEY),
+      getAccessToken: async () => (sessionStorage.getItem(KEY) ? `dev:${sessionStorage.getItem(KEY)}` : null),
     },
     vault: {
       remember: async (id, v) => sessionStorage.setItem(`vault-${id}`, v),
       recall: async (id) => sessionStorage.getItem(`vault-${id}`),
       forget: async (id) => sessionStorage.removeItem(`vault-${id}`),
     },
-    minimize: async () => {},
-    maximize: async () => {},
-    close: async () => {},
     getVersion: async () => 'dev',
     backups: {
       async write(name, json) {

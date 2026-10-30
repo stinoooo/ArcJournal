@@ -32,7 +32,7 @@ export default function CommentsSidebar({ comments = [], activeCommentId, onComm
           <span style={{
             fontFamily: 'var(--font-display)',
             fontWeight: 700,
-            fontSize: 13,
+            fontSize: 14,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
             color: 'var(--text)',
@@ -43,7 +43,7 @@ export default function CommentsSidebar({ comments = [], activeCommentId, onComm
             marginLeft: 'auto',
             background: 'var(--surface2)',
             color: 'var(--muted)',
-            fontSize: 11,
+            fontSize: 12,
             padding: '2px 8px',
             borderRadius: 100,
             fontFamily: 'var(--font-display)',
@@ -57,14 +57,14 @@ export default function CommentsSidebar({ comments = [], activeCommentId, onComm
           placeholder="Search comments…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={{ fontSize: 12, padding: '7px 12px' }}
+          style={{ fontSize: 13, padding: '7px 12px' }}
         />
       </div>
 
       {/* Comment list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         {filtered.length === 0 && (
-          <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>
+          <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: 14 }}>
             {comments.length === 0
               ? 'Highlight text in your entry and click the comment button to add comments.'
               : 'No comments match your search.'}
@@ -87,7 +87,7 @@ export default function CommentsSidebar({ comments = [], activeCommentId, onComm
       <div style={{
         padding: '8px 16px',
         borderTop: '1px solid var(--border)',
-        fontSize: 10,
+        fontSize: 12,
         color: 'var(--muted)',
         opacity: 0.5,
         textAlign: 'center',
@@ -124,7 +124,7 @@ function CommentCard({ comment, isActive, onClick, onMouseEnter, onMouseLeave, o
       {/* Quoted text */}
       {comment.selectedText && (
         <div style={{
-          fontSize: 11,
+          fontSize: 12,
           color: '#FFD166',
           fontStyle: 'italic',
           opacity: 0.75,
@@ -142,13 +142,13 @@ function CommentCard({ comment, isActive, onClick, onMouseEnter, onMouseLeave, o
       )}
 
       {/* Comment body */}
-      <p style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5, marginBottom: 6 }}>
+      <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.5, marginBottom: 6 }}>
         {comment.text}
       </p>
 
       {/* Timestamp + delete */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 10, color: 'var(--muted)', opacity: 0.6 }}>{dt}</span>
+        <span style={{ fontSize: 12, color: 'var(--muted)', opacity: 0.8 }}>{dt}</span>
         {showDelete && (
           <button
             onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
@@ -157,7 +157,7 @@ function CommentCard({ comment, isActive, onClick, onMouseEnter, onMouseLeave, o
               border: 'none',
               color: 'var(--error)',
               cursor: 'pointer',
-              fontSize: 11,
+              fontSize: 12,
               padding: '2px 6px',
               borderRadius: 4,
               opacity: 0.7,
