@@ -55,3 +55,18 @@ test('reads sha256sum output', () => {
   assert.equal(sums.get('ArcJournal-2.1.0-Setup.exe'), 'b'.repeat(64));
   assert.equal(sums.size, 2);
 });
+
+test('trusts checksums only with a valid release signature', () => {
+  const crypto = require('crypto');
+  const { verifySums, RELEASE_PUBLIC_KEY } = require('./update-plan');
+  const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
+  const pub = publicKey.export({ type: 'spki', format: 'der' }).toString('base64');
+  const sums = `${'a'.repeat(64)}  arcjournal_2.0.1_amd64.deb\n`;
+  const sig = crypto.sign(null, Buffer.from(sums), privateKey).toString('base64');
+
+  assert.equal(verifySums(sums, sig, pub), true);
+  assert.equal(verifySums(sums.replace('a', 'b'), sig, pub), false, 'a changed checksum');
+  assert.equal(verifySums(sums, sig), false, 'signed by another key than the one in the app');
+  assert.equal(verifySums(sums, 'not base64 at all', pub), false);
+  assert.match(RELEASE_PUBLIC_KEY, /^MCow/);
+});
