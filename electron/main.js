@@ -78,7 +78,10 @@ function createWindow() {
     return { action: 'deny' };
   });
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    if (!url.startsWith(isDev ? 'http://localhost:5173' : ORIGIN)) event.preventDefault();
+    if (!isAppUrl(url)) event.preventDefault();
+  });
+  mainWindow.webContents.on('will-redirect', (event, url) => {
+    if (!isAppUrl(url)) event.preventDefault();
   });
 
   if (isDev) {
@@ -104,6 +107,7 @@ function lockDownSession() {
   session.defaultSession.setPermissionRequestHandler((_wc, permission, callback) => {
     callback(permission === 'clipboard-sanitized-write');
   });
+  session.defaultSession.setPermissionCheckHandler((_wc, permission) => permission === 'clipboard-sanitized-write');
 }
 
 function buildMenu() {
@@ -131,9 +135,22 @@ function buildMenu() {
 }
 
 // ── IPC ──────────────────────────────────────────────────────
+// Exact comparison: a prefix check would also accept app://arcjournal.evil.
+// Node treats app: as a non-special scheme (its URL origin is "null"), so the
+// protocol and host are compared instead.
+function isAppUrl(url) {
+  try {
+    const u = new URL(url);
+    if (u.protocol === 'app:' && u.host === 'arcjournal') return true;
+    return isDev && u.origin === 'http://localhost:5173';
+  } catch {
+    return false;
+  }
+}
+
 const fromApp = (event) => {
   const url = event.senderFrame?.url || '';
-  return url.startsWith(ORIGIN) || (isDev && url.startsWith('http://localhost:5173'));
+  return isAppUrl(url);
 };
 
 function handle(channel, fn) {

@@ -19,22 +19,31 @@ function isStrong() {
   return true;
 }
 
+// Without OS encryption, secrets live only in memory: signing in lasts until
+// the app closes instead of being written to disk in plaintext.
+const memory = new Map();
+
 function write(name, value) {
+  if (!safeStorage.isEncryptionAvailable()) {
+    memory.set(name, value);
+    return;
+  }
   fs.mkdirSync(dir(), { recursive: true });
-  const data = safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(value) : Buffer.from(value, 'utf8');
-  fs.writeFileSync(file(name), data, { mode: 0o600 });
+  fs.writeFileSync(file(name), safeStorage.encryptString(value), { mode: 0o600 });
 }
 
 function read(name) {
+  if (memory.has(name)) return memory.get(name);
+  if (!safeStorage.isEncryptionAvailable()) return null;
   try {
-    const data = fs.readFileSync(file(name));
-    return safeStorage.isEncryptionAvailable() ? safeStorage.decryptString(data) : data.toString('utf8');
+    return safeStorage.decryptString(fs.readFileSync(file(name)));
   } catch {
     return null;
   }
 }
 
 function remove(name) {
+  memory.delete(name);
   fs.rmSync(file(name), { force: true });
 }
 

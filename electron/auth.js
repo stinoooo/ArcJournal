@@ -109,6 +109,13 @@ async function signIn({ link = false } = {}) {
         reply(400, 'Something went wrong', 'This sign-in link is not the one ArcJournal opened. Start again from the app.');
         return;
       }
+      // RFC 9207: when the server names itself, it must be Backboard.
+      const iss = url.searchParams.get('iss');
+      if (iss && iss !== ISSUER) {
+        reply(400, 'Something went wrong', 'This sign-in did not come from Arcnode. Start again from the app.');
+        finish(new AuthError('Sign-in failed.'));
+        return;
+      }
       const code = url.searchParams.get('code');
       if (!code) {
         reply(400, 'Sign-in cancelled', 'You can close this tab and return to ArcJournal.');
