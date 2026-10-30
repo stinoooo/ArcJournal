@@ -19,7 +19,7 @@ Node.js version from `engines` in the root `package.json`.
 | `ARCNODE_ISSUER` | `https://backboard.arcnode.dev` (the default). |
 | `ARCNODE_JWKS_URL` | `https://backboard.arcnode.dev/.well-known/jwks.json` (the default). |
 | `CORS_ORIGINS` | Leave empty. The app's `app://arcjournal` origin is always allowed. |
-| `JWT_SECRET` | Keep the existing value. It signs password sessions for 1.x accounts that are not linked yet. |
+| `JWT_SECRET` | Keep the existing value. It recognizes sessions saved by 1.x apps, so those apps are told to update. |
 
 `JWT_EXPIRES_IN` is no longer read and can be removed.
 
@@ -28,8 +28,10 @@ Node.js version from `engines` in the root `package.json`.
 - Indexes are synced: email is no longer unique and usernames only exist on 1.x accounts.
 - The `wraps` collection from 1.x is dropped. It held entry titles and grades in plaintext,
   and wraps are now computed in the app.
-- 1.x accounts and entries stay as they are. Their owners keep signing in with their password
-  in 2.0 until they connect an Arcnode account; only then is the password removed.
+- 1.x accounts and entries stay as they are. Their owners sign in with Arcnode and choose
+  **Bring your old journal** (`POST /user/link-legacy`), which checks the old password once,
+  merges the 1.x account into the Arcnode account and deletes it. Since 2.1.0 a 1.x password
+  never signs in on its own: `POST /auth/login` answers `410 arcnode_only` to 2.0 apps.
 - ArcJournal 1.x apps get `426 Upgrade Required` with a link to the download page, both when
   they sign in and when they start with a saved 1.x session. 1.x loads from `file://`, so
   `/auth` accepts the `file://` and `null` origins (tested in `server/test/api.test.js`).
