@@ -19,21 +19,21 @@
   },
   "arcnode": {
     "issuer": "https://backboard.arcnode.dev",
-    "clientId": "",
+    "clientId": "arc_f430bb7fde7e3da2926904efe1b0fbda",
     "redirectPorts": [
       47825,
       47826
     ]
   },
   "scripts": {
-    "postinstall": "npm --prefix client install && npm --prefix server install",
     "dev": "concurrently -k -n api,ui,app \"npm --prefix server run dev\" \"npm --prefix client run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
     "build": "npm --prefix client run build",
     "test": "node --test \"electron/*.test.js\" && npm --prefix server test && npm --prefix client test",
     "icons": "node tools/make-icons.mjs",
     "package": "npm run build && electron-forge package",
     "make": "npm run build && electron-forge make",
-    "publish": "npm run build && electron-forge publish"
+    "publish": "npm run build && electron-forge publish",
+    "setup": "npm install && npm --prefix client install && npm --prefix server install"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1"

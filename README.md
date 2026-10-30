@@ -109,7 +109,7 @@ restart into them:
 Needs Node.js 22.12 or later and a MongoDB (local or Docker).
 
 ```bash
-npm install            # also installs client/ and server/
+npm run setup          # installs the root, client/ and server/
 cp .env.example .env   # then fill in MONGODB_URI and ARCJOURNAL_CLIENT_ID
 npm run dev            # API, Vite and Electron together
 npm test               # server API tests and client unit tests
