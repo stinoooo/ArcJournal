@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.1.1 (2026-11-27)
+
+### Changed
+
+- The calendar and the journal list open faster in months with many entries or pictures. The
+  calendar now downloads only which days have entries, and the encryption screen downloads only
+  entries from ArcJournal 1.x, instead of the whole journal.
+- The mood pictures are 256 pixels instead of 2048. They look the same at their size, and the
+  app is about 4 MB smaller.
+- On Linux without a keychain, ArcJournal keeps your sign-in in memory instead of in a file, so
+  you sign in again after you restart the app.
+
+### Fixed
+
+- An entry with many saved versions and large pictures could stop saving. ArcJournal now drops
+  its oldest versions before the entry gets too large to store.
+- Opening the app on two devices at the same moment for the first time no longer fails on one
+  of them.
+
+### Server
+
+- Large requests are read only after sign-in, so anonymous requests can no longer fill the
+  server's memory.
+- One entry index covers sorting by newest first, and the two indexes it replaces are dropped.
+- Railway installs only the server's dependencies.
+
 ## 2.1.0 (2026-10-30)
 
 ### Changed
