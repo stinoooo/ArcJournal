@@ -9,22 +9,26 @@ const { app, safeStorage } = require('electron');
 const dir = () => path.join(app.getPath('userData'), 'secrets');
 const file = (name) => path.join(dir(), `${name.replace(/[^a-z0-9-]/gi, '_')}.bin`);
 
+const isBasicText = () =>
+  process.platform === 'linux' && safeStorage.isEncryptionAvailable() && safeStorage.getSelectedStorageBackend() === 'basic_text';
+
 /**
  * True when secrets are protected by a real keychain. On Linux without one,
  * Electron falls back to a fixed key (basic_text), which protects nothing.
  */
 function isStrong() {
   if (!safeStorage.isEncryptionAvailable()) return false;
-  if (process.platform === 'linux') return safeStorage.getSelectedStorageBackend() !== 'basic_text';
+  if (isBasicText()) return false;
   return true;
 }
 
-// Without OS encryption, secrets live only in memory: signing in lasts until
-// the app closes instead of being written to disk in plaintext.
+// Without a real keychain, secrets live only in memory: signing in lasts
+// until the app closes instead of being written to disk in plaintext, or under
+// Linux basic_text, with a key that is the same on every computer.
 const memory = new Map();
 
 function write(name, value) {
-  if (!safeStorage.isEncryptionAvailable()) {
+  if (!isStrong()) {
     memory.set(name, value);
     return;
   }
@@ -34,7 +38,13 @@ function write(name, value) {
 
 function read(name) {
   if (memory.has(name)) return memory.get(name);
-  if (!safeStorage.isEncryptionAvailable()) return null;
+  if (!isStrong()) {
+    // 2.1.0 and earlier wrote secrets with the fixed basic_text key. Remove
+    // them, but only when that is really the backend: a keychain that is just
+    // not available yet must not cost anyone their sign-in.
+    if (isBasicText()) fs.rmSync(file(name), { force: true });
+    return null;
+  }
   try {
     return safeStorage.decryptString(fs.readFileSync(file(name)));
   } catch {
