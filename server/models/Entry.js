@@ -66,6 +66,14 @@ entrySchema.methods.toClient = function () {
   return { ...base, legacy: true, ...legacy };
 };
 
+// Dates and timestamps only, for views that just need to know which days
+// have entries (the calendar). See GET /entries?fields=meta.
+entrySchema.statics.META_FIELDS = '_id date enc createdAt updatedAt lastEditedAt';
+entrySchema.methods.toMeta = function () {
+  const meta = { _id: this._id, date: this.date, createdAt: this.createdAt, updatedAt: this.updatedAt, lastEditedAt: this.lastEditedAt };
+  return this.enc ? { ...meta, enc: this.enc } : { ...meta, legacy: true };
+};
+
 entrySchema.statics.LEGACY_FIELDS = LEGACY_FIELDS;
 
 module.exports = mongoose.model('Entry', entrySchema);

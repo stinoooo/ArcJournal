@@ -420,6 +420,31 @@ test('several first requests at once create one account', async () => {
   assert.equal(await User.countDocuments({ arcnodeId: 'carol' }), 1);
 });
 
+test('the calendar can list dates without downloading entries', async () => {
+  await request(app).post('/entries').set(as('alice')).send({ date: today(), body: blob(1), files: blob(2) }).expect(201);
+  const res = await request(app).get('/entries').query({ fields: 'meta' }).set(as('alice')).expect(200);
+  assert.equal(res.body.entries.length, 1);
+  assert.equal(res.body.entries[0].date, today());
+  assert.equal(res.body.entries[0].body, undefined);
+  assert.equal(res.body.entries[0].files, undefined);
+  const bob = await request(app).get('/entries').query({ fields: 'meta' }).set(as('bob')).expect(200);
+  assert.equal(bob.body.entries.length, 0);
+});
+
+test('legacy=1 lists only entries still in 1.x plaintext, and only your own', async () => {
+  await request(app).get('/auth/me').set(as('alice'));
+  await request(app).get('/auth/me').set(as('bob'));
+  const alice = await User.findOne({ arcnodeId: 'alice' });
+  const bob = await User.findOne({ arcnodeId: 'bob' });
+  await Entry.create({ userId: alice._id, date: '2025-01-02', content: '<p>old</p>' });
+  await Entry.create({ userId: bob._id, date: '2025-01-02', content: '<p>bob</p>' });
+  await request(app).post('/entries').set(as('alice')).send({ date: today(), body: blob() }).expect(201);
+  const res = await request(app).get('/entries').query({ legacy: '1' }).set(as('alice')).expect(200);
+  assert.equal(res.body.entries.length, 1);
+  assert.equal(res.body.entries[0].legacy, true);
+  assert.equal(res.body.entries[0].content, '<p>old</p>');
+});
+
 test('admin routes refuse everyone else', async () => {
   await request(app).get('/admin/overview').expect(401);
   await request(app).get('/admin/overview').set(as('mallory')).expect(403);

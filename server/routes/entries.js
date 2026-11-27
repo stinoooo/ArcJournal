@@ -14,9 +14,13 @@ const ENC_VERSION = 1;
 const MAX_VERSIONS = 10;
 
 // GET /entries?date=YYYY-MM-DD | ?from=&to=
+// Optional: legacy=1 lists only entries still in 1.x plaintext; fields=meta
+// leaves out the sealed body and attachments (the calendar only needs dates).
 router.get('/', async (req, res) => {
   const { from, to, date } = req.query;
   const query = { userId: req.user._id };
+  if (req.query.legacy === '1') query.enc = { $exists: false };
+  const metaOnly = req.query.fields === 'meta';
   if (date !== undefined) {
     if (!isDate(date)) return res.status(400).json({ error: 'Invalid date' });
     query.date = date;
@@ -28,7 +32,12 @@ router.get('/', async (req, res) => {
     if (from) query.date.$gte = from;
     if (to) query.date.$lte = to;
   }
-  const entries = await Entry.find(query).select('-versions.body -versions.content').sort({ date: -1, createdAt: -1 });
+  const sort = { date: -1, createdAt: -1 };
+  if (metaOnly) {
+    const entries = await Entry.find(query).select(Entry.META_FIELDS).sort(sort);
+    return res.json({ entries: entries.map((e) => e.toMeta()) });
+  }
+  const entries = await Entry.find(query).select('-versions.body -versions.content').sort(sort);
   res.json({ entries: entries.map((e) => e.toClient()) });
 });
 
