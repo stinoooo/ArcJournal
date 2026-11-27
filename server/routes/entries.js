@@ -4,7 +4,7 @@ const Entry = require('../models/Entry');
 const LegacyBackup = require('../models/LegacyBackup');
 const auth = require('../middleware/auth');
 const { requireActive } = require('../middleware/auth');
-const { isDate, isFutureDate, isSealed, sealed, MAX_BODY, MAX_FILES } = require('../lib/validate');
+const { isDate, isFutureDate, isSealed, sealed, trimVersions, MAX_BODY, MAX_FILES } = require('../lib/validate');
 
 // The body is parsed only after the token checks out. Sealed entries carry
 // attachments, so the limit is large (see lib/validate.js for the per-field caps).
@@ -103,6 +103,9 @@ router.put('/:id', async (req, res) => {
   entry.enc = ENC_VERSION;
   entry.body = sealed(body);
   if (files !== undefined) entry.files = files ? sealed(files) : undefined;
+  // Ten full copies of an entry with large inline images would pass MongoDB's
+  // 16 MB document limit and every later save would fail.
+  trimVersions(entry);
   await entry.save();
   res.json({ entry: entry.toClient() });
 });

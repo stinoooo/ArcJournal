@@ -445,6 +445,21 @@ test('legacy=1 lists only entries still in 1.x plaintext, and only your own', as
   assert.equal(res.body.entries[0].content, '<p>old</p>');
 });
 
+test('old versions make room so an entry never outgrows MongoDB', async () => {
+  const sealedOf = (bytes, n) => ({ iv: 'AAAAAAAAAAAAAAAA', ciphertext: Buffer.alloc(bytes, n).toString('base64') });
+  const files = sealedOf(7 * 1024 * 1024, 1); // about 9.3 MB once base64
+  const { body } = await request(app).post('/entries').set(as('alice'))
+    .send({ date: today(), body: sealedOf(1400 * 1024, 2), files }).expect(201);
+  const id = body.entry._id;
+  for (let i = 3; i < 9; i++) {
+    await request(app).put(`/entries/${id}`).set(as('alice')).send({ body: sealedOf(1400 * 1024, i), snapshot: true }).expect(200);
+  }
+  const [{ size }] = await Entry.aggregate([{ $match: { _id: new mongoose.Types.ObjectId(id) } }, { $project: { size: { $bsonSize: '$$ROOT' } } }]);
+  assert.ok(size < 15 * 1024 * 1024, `entry is ${size} bytes`);
+  const res = await request(app).get(`/entries/${id}/versions`).set(as('alice')).expect(200);
+  assert.ok(res.body.versions.length >= 1 && res.body.versions.length < 6);
+});
+
 test('admin routes refuse everyone else', async () => {
   await request(app).get('/admin/overview').expect(401);
   await request(app).get('/admin/overview').set(as('mallory')).expect(403);
