@@ -31,11 +31,14 @@ module.exports = async function authMiddleware(req, res, next) {
     let user = await User.findOne({ arcnodeId: claims.sub });
     if (!user) {
       const profile = await fetchProfile(token).catch(() => null);
-      user = await User.create({
-        arcnodeId: claims.sub,
-        email: (profile?.email || '').toLowerCase(),
-        displayName: profile?.name || '',
-      });
+      // The app fires several requests at once after the first sign-in. An
+      // upsert lets them all land on one account instead of the losers
+      // failing on the unique arcnodeId index.
+      user = await User.findOneAndUpdate(
+        { arcnodeId: claims.sub },
+        { $setOnInsert: { arcnodeId: claims.sub, email: (profile?.email || '').toLowerCase(), displayName: profile?.name || '' } },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      );
     }
 
     // A suspension with an end date lifts itself once that date has passed.

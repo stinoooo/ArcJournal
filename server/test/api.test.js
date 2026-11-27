@@ -414,6 +414,12 @@ test('anonymous requests cannot make the server parse large bodies', async () =>
   await request(app).post('/entries').set(as('alice')).set('Content-Type', 'application/json').send(huge).expect(201);
 });
 
+test('several first requests at once create one account', async () => {
+  const results = await Promise.all(Array.from({ length: 6 }, () => request(app).get('/auth/me').set(as('carol'))));
+  assert.deepEqual(results.map((r) => r.status), [200, 200, 200, 200, 200, 200]);
+  assert.equal(await User.countDocuments({ arcnodeId: 'carol' }), 1);
+});
+
 test('admin routes refuse everyone else', async () => {
   await request(app).get('/admin/overview').expect(401);
   await request(app).get('/admin/overview').set(as('mallory')).expect(403);
