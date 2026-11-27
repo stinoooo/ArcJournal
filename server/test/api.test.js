@@ -408,9 +408,12 @@ test('anonymous requests cannot make the server parse large bodies', async () =>
   const big = JSON.stringify({ client: 'arcjournal-2', pad: 'a'.repeat(200 * 1024) });
   // Outside /entries the limit is small for everyone.
   await request(app).post('/auth/login').set('Content-Type', 'application/json').send(big).expect(413);
-  // /entries reads its body only after the token is verified.
+  // /entries reads its body only after the token is verified: an anonymous
+  // body over the small limit gets 401, not 413. (Kept small so the server's
+  // early answer cannot race a client still writing megabytes.)
+  const medium = JSON.stringify({ date: today(), body: blob(), pad: 'a'.repeat(200 * 1024) });
+  await request(app).post('/entries').set('Content-Type', 'application/json').send(medium).expect(401);
   const huge = JSON.stringify({ date: today(), body: blob(), pad: 'a'.repeat(2 * 1024 * 1024) });
-  await request(app).post('/entries').set('Content-Type', 'application/json').send(huge).expect(401);
   await request(app).post('/entries').set(as('alice')).set('Content-Type', 'application/json').send(huge).expect(201);
 });
 
