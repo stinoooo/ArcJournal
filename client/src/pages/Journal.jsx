@@ -69,7 +69,7 @@ export default function Journal() {
   const loadMonth = useCallback(async (m) => {
     const from = format(startOfMonth(m), 'yyyy-MM-dd');
     const to   = format(endOfMonth(m),   'yyyy-MM-dd');
-    try { const r = await entriesAPI.list({ from, to }); setAllEntries(r.data.entries || []); } catch {}
+    try { const r = await entriesAPI.dates({ from, to }); setAllEntries(r.data.entries || []); } catch {}
   }, []);
 
   // ── Load date entries (sidebar list) ────────────────────

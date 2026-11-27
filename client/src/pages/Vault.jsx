@@ -96,7 +96,7 @@ function Setup() {
   const [legacyCount, setLegacyCount] = useState(0);
 
   useEffect(() => {
-    sealedEntriesAPI.list()
+    sealedEntriesAPI.list({ legacy: 1, fields: 'meta' })
       .then((r) => setLegacyCount(r.data.entries.filter((e) => e.legacy).length))
       .catch(() => {});
   }, []);
