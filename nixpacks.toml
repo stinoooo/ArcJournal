@@ -1,0 +1,8 @@
+# Railway builds only the API in server/ (railway.json). The desktop app's
+# dependencies at the repository root (Electron, Electron Forge, sharp) are
+# never installed there, and there is nothing to build.
+[phases.install]
+cmds = ["npm ci --prefix server --omit=dev"]
+
+[phases.build]
+cmds = []

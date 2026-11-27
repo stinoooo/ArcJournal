@@ -1,0 +1,12 @@
+# Railway's build context: only the API in server/ is built and run.
+.git
+.github
+node_modules
+server/node_modules
+client
+electron
+assets
+tools
+out
+.env
+*.log
