@@ -14,10 +14,10 @@ const versionSchema = new mongoose.Schema({
 
 const entrySchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     // The calendar day stays readable so the journal can be listed by date.
     // Everything written in the entry lives in the sealed blobs.
-    date: { type: String, required: true, index: true }, // YYYY-MM-DD
+    date: { type: String, required: true }, // YYYY-MM-DD
 
     // Encryption format version. Unset means a legacy plaintext entry from
     // ArcJournal 1.x that the app encrypts the next time it is unlocked.
@@ -42,8 +42,12 @@ const entrySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Not unique: several entries per day are allowed.
-entrySchema.index({ userId: 1, date: 1 });
+// Not unique: several entries per day are allowed. Every journal query filters
+// on userId and a date or date range and sorts newest first, so this one index
+// answers them without an in-memory sort. It also covers userId-only lookups
+// (deleting a journal, counting entries), which is why userId and date carry
+// no index of their own.
+entrySchema.index({ userId: 1, date: -1, createdAt: -1 });
 
 const LEGACY_FIELDS = ['title', 'content', 'grade', 'emoji', 'bgColor', 'comments', 'attachments'];
 
@@ -60,6 +64,14 @@ entrySchema.methods.toClient = function () {
   const legacy = {};
   for (const key of LEGACY_FIELDS) legacy[key] = this[key];
   return { ...base, legacy: true, ...legacy };
+};
+
+// Dates and timestamps only, for views that just need to know which days
+// have entries (the calendar). See GET /entries?fields=meta.
+entrySchema.statics.META_FIELDS = '_id date enc createdAt updatedAt lastEditedAt';
+entrySchema.methods.toMeta = function () {
+  const meta = { _id: this._id, date: this.date, createdAt: this.createdAt, updatedAt: this.updatedAt, lastEditedAt: this.lastEditedAt };
+  return this.enc ? { ...meta, enc: this.enc } : { ...meta, legacy: true };
 };
 
 entrySchema.statics.LEGACY_FIELDS = LEGACY_FIELDS;

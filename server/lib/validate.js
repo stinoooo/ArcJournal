@@ -31,8 +31,23 @@ function sealed(value) {
   return { iv: value.iv, ciphertext: value.ciphertext };
 }
 
+// MongoDB refuses documents over 16 MB. The current text (MAX_BODY) and
+// attachments (MAX_FILES) always fit; older versions get the rest.
+const MAX_ENTRY = 14 * 1024 * 1024;
+const sealedSize = (value) => (value?.ciphertext?.length || 0) + (value?.iv?.length || 0);
+
+/** Drops the oldest versions until the whole entry stays under MAX_ENTRY. */
+function trimVersions(entry, max = MAX_ENTRY) {
+  let total = sealedSize(entry.body) + sealedSize(entry.files);
+  for (const v of entry.versions) total += sealedSize(v.body);
+  while (total > max && entry.versions.length) {
+    total -= sealedSize(entry.versions[0].body);
+    entry.versions.shift();
+  }
+}
+
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-module.exports = { isDate, isFutureDate, isSealed, sealed, escapeRegex, MAX_BODY, MAX_FILES };
+module.exports = { isDate, isFutureDate, isSealed, sealed, escapeRegex, trimVersions, MAX_BODY, MAX_FILES, MAX_ENTRY };

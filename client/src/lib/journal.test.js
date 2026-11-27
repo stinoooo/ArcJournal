@@ -176,4 +176,22 @@ describe('encrypting 1.x entries', () => {
     const versions = (await entriesAPI.versions(id, '2025-01-01')).data.versions;
     expect(versions.map((v) => v.content)).toEqual(['<p>before</p>']);
   });
+
+  it('lists the days in the calendar without downloading or decrypting entries', async () => {
+    await entriesAPI.create({ date: '2026-10-30', content: '<p>new</p>', attachments: [{ id: 'a', data: 'x' }] });
+    const spy = vi.spyOn(server.api, 'list');
+    const { entries } = (await entriesAPI.dates({ from: '2026-10-01', to: '2026-10-31' })).data;
+    expect(spy).toHaveBeenCalledWith({ from: '2026-10-01', to: '2026-10-31', fields: 'meta' });
+    expect(entries.map((e) => e.date)).toEqual(['2026-10-30']);
+    expect(entries[0].content).toBeUndefined();
+    expect(entries[0].attachments).toBeUndefined();
+    spy.mockRestore();
+  });
+
+  it('asks the server for the 1.x entries only when encrypting them', async () => {
+    const spy = vi.spyOn(server.api, 'list');
+    await encryptLegacyEntries({ saveBackup: vi.fn() });
+    expect(spy).toHaveBeenCalledWith({ legacy: 1 });
+    spy.mockRestore();
+  });
 });

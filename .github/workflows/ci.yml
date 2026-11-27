@@ -1,9 +1,10 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
+  # The pull request run already checks the merged result, so a second run on
+  # the push to main repeated it on the same tree. Run it by hand if needed.
   pull_request:
+  workflow_dispatch:
 
 env:
   # Keep the MongoDB test binary out of installs that get packaged.

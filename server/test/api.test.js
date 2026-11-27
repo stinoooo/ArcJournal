@@ -403,3 +403,68 @@ test('a rejected migration leaves no safety copy behind', async () => {
   assert.equal(raw.content, '<p>secret</p>');
 });
 
+
+test('anonymous requests cannot make the server parse large bodies', async () => {
+  const big = JSON.stringify({ client: 'arcjournal-2', pad: 'a'.repeat(200 * 1024) });
+  // Outside /entries the limit is small for everyone.
+  await request(app).post('/auth/login').set('Content-Type', 'application/json').send(big).expect(413);
+  // /entries reads its body only after the token is verified: an anonymous
+  // body over the small limit gets 401, not 413. (Kept small so the server's
+  // early answer cannot race a client still writing megabytes.)
+  const medium = JSON.stringify({ date: today(), body: blob(), pad: 'a'.repeat(200 * 1024) });
+  await request(app).post('/entries').set('Content-Type', 'application/json').send(medium).expect(401);
+  const huge = JSON.stringify({ date: today(), body: blob(), pad: 'a'.repeat(2 * 1024 * 1024) });
+  await request(app).post('/entries').set(as('alice')).set('Content-Type', 'application/json').send(huge).expect(201);
+});
+
+test('several first requests at once create one account', async () => {
+  const results = await Promise.all(Array.from({ length: 6 }, () => request(app).get('/auth/me').set(as('carol'))));
+  assert.deepEqual(results.map((r) => r.status), [200, 200, 200, 200, 200, 200]);
+  assert.equal(await User.countDocuments({ arcnodeId: 'carol' }), 1);
+});
+
+test('the calendar can list dates without downloading entries', async () => {
+  await request(app).post('/entries').set(as('alice')).send({ date: today(), body: blob(1), files: blob(2) }).expect(201);
+  const res = await request(app).get('/entries').query({ fields: 'meta' }).set(as('alice')).expect(200);
+  assert.equal(res.body.entries.length, 1);
+  assert.equal(res.body.entries[0].date, today());
+  assert.equal(res.body.entries[0].body, undefined);
+  assert.equal(res.body.entries[0].files, undefined);
+  const bob = await request(app).get('/entries').query({ fields: 'meta' }).set(as('bob')).expect(200);
+  assert.equal(bob.body.entries.length, 0);
+});
+
+test('legacy=1 lists only entries still in 1.x plaintext, and only your own', async () => {
+  await request(app).get('/auth/me').set(as('alice'));
+  await request(app).get('/auth/me').set(as('bob'));
+  const alice = await User.findOne({ arcnodeId: 'alice' });
+  const bob = await User.findOne({ arcnodeId: 'bob' });
+  await Entry.create({ userId: alice._id, date: '2025-01-02', content: '<p>old</p>' });
+  await Entry.create({ userId: bob._id, date: '2025-01-02', content: '<p>bob</p>' });
+  await request(app).post('/entries').set(as('alice')).send({ date: today(), body: blob() }).expect(201);
+  const res = await request(app).get('/entries').query({ legacy: '1' }).set(as('alice')).expect(200);
+  assert.equal(res.body.entries.length, 1);
+  assert.equal(res.body.entries[0].legacy, true);
+  assert.equal(res.body.entries[0].content, '<p>old</p>');
+});
+
+test('old versions make room so an entry never outgrows MongoDB', async () => {
+  const sealedOf = (bytes, n) => ({ iv: 'AAAAAAAAAAAAAAAA', ciphertext: Buffer.alloc(bytes, n).toString('base64') });
+  const files = sealedOf(7 * 1024 * 1024, 1); // about 9.3 MB once base64
+  const { body } = await request(app).post('/entries').set(as('alice'))
+    .send({ date: today(), body: sealedOf(1400 * 1024, 2), files }).expect(201);
+  const id = body.entry._id;
+  for (let i = 3; i < 9; i++) {
+    await request(app).put(`/entries/${id}`).set(as('alice')).send({ body: sealedOf(1400 * 1024, i), snapshot: true }).expect(200);
+  }
+  const [{ size }] = await Entry.aggregate([{ $match: { _id: new mongoose.Types.ObjectId(id) } }, { $project: { size: { $bsonSize: '$$ROOT' } } }]);
+  assert.ok(size < 15 * 1024 * 1024, `entry is ${size} bytes`);
+  const res = await request(app).get(`/entries/${id}/versions`).set(as('alice')).expect(200);
+  assert.ok(res.body.versions.length >= 1 && res.body.versions.length < 6);
+});
+
+test('admin routes refuse everyone else', async () => {
+  await request(app).get('/admin/overview').expect(401);
+  await request(app).get('/admin/overview').set(as('mallory')).expect(403);
+  await request(app).get('/admin/users').set(as('mallory')).expect(403);
+});

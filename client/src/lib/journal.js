@@ -89,6 +89,16 @@ export const entriesAPI = {
     return { data: { entries: await openAll(res.data.entries) } };
   },
 
+  /**
+   * Which days have entries, without downloading or decrypting them: the
+   * server leaves out the sealed text and attachments. A server older than
+   * 2.1.1 ignores fields=meta and sends full entries, which works the same.
+   */
+  async dates(params) {
+    const res = await sealedEntriesAPI.list({ ...params, fields: 'meta' });
+    return { data: { entries: res.data.entries.map(({ _id, date, createdAt, updatedAt, lastEditedAt }) => ({ _id, date, createdAt, updatedAt, lastEditedAt })) } };
+  },
+
   async create(data) {
     const res = await sealedEntriesAPI.create({ date: data.date, ...(await sealEntry(data.date, data)) });
     return { data: { entry: await openEntry(res.data.entry) } };
@@ -166,7 +176,8 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
  */
 export async function encryptLegacyEntries({ onProgress = () => {}, saveBackup }) {
   const key = requireKey();
-  const res = await sealedEntriesAPI.list();
+  // Only the 1.x entries: the encrypted ones (and their attachments) stay on the server.
+  const res = await sealedEntriesAPI.list({ legacy: 1 });
   const legacy = res.data.entries.filter((e) => e.legacy);
   if (!legacy.length) return { count: 0, backup: null };
 

@@ -1,19 +1,26 @@
-const router = require('express').Router();
+const express = require('express');
+const router = express.Router();
 const Entry = require('../models/Entry');
 const LegacyBackup = require('../models/LegacyBackup');
 const auth = require('../middleware/auth');
 const { requireActive } = require('../middleware/auth');
-const { isDate, isFutureDate, isSealed, sealed, MAX_BODY, MAX_FILES } = require('../lib/validate');
+const { isDate, isFutureDate, isSealed, sealed, trimVersions, MAX_BODY, MAX_FILES } = require('../lib/validate');
 
-router.use(auth, requireActive);
+// The body is parsed only after the token checks out. Sealed entries carry
+// attachments, so the limit is large (see lib/validate.js for the per-field caps).
+router.use(auth, requireActive, express.json({ limit: '16mb' }));
 
 const ENC_VERSION = 1;
 const MAX_VERSIONS = 10;
 
 // GET /entries?date=YYYY-MM-DD | ?from=&to=
+// Optional: legacy=1 lists only entries still in 1.x plaintext; fields=meta
+// leaves out the sealed body and attachments (the calendar only needs dates).
 router.get('/', async (req, res) => {
   const { from, to, date } = req.query;
   const query = { userId: req.user._id };
+  if (req.query.legacy === '1') query.enc = { $exists: false };
+  const metaOnly = req.query.fields === 'meta';
   if (date !== undefined) {
     if (!isDate(date)) return res.status(400).json({ error: 'Invalid date' });
     query.date = date;
@@ -25,7 +32,12 @@ router.get('/', async (req, res) => {
     if (from) query.date.$gte = from;
     if (to) query.date.$lte = to;
   }
-  const entries = await Entry.find(query).select('-versions.body -versions.content').sort({ date: -1, createdAt: -1 });
+  const sort = { date: -1, createdAt: -1 };
+  if (metaOnly) {
+    const entries = await Entry.find(query).select(Entry.META_FIELDS).sort(sort);
+    return res.json({ entries: entries.map((e) => e.toMeta()) });
+  }
+  const entries = await Entry.find(query).select('-versions.body -versions.content').sort(sort);
   res.json({ entries: entries.map((e) => e.toClient()) });
 });
 
@@ -91,6 +103,9 @@ router.put('/:id', async (req, res) => {
   entry.enc = ENC_VERSION;
   entry.body = sealed(body);
   if (files !== undefined) entry.files = files ? sealed(files) : undefined;
+  // Ten full copies of an entry with large inline images would pass MongoDB's
+  // 16 MB document limit and every later save would fail.
+  trimVersions(entry);
   await entry.save();
   res.json({ entry: entry.toClient() });
 });
