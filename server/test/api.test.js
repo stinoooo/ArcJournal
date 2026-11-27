@@ -403,3 +403,19 @@ test('a rejected migration leaves no safety copy behind', async () => {
   assert.equal(raw.content, '<p>secret</p>');
 });
 
+
+test('anonymous requests cannot make the server parse large bodies', async () => {
+  const big = JSON.stringify({ client: 'arcjournal-2', pad: 'a'.repeat(200 * 1024) });
+  // Outside /entries the limit is small for everyone.
+  await request(app).post('/auth/login').set('Content-Type', 'application/json').send(big).expect(413);
+  // /entries reads its body only after the token is verified.
+  const huge = JSON.stringify({ date: today(), body: blob(), pad: 'a'.repeat(2 * 1024 * 1024) });
+  await request(app).post('/entries').set('Content-Type', 'application/json').send(huge).expect(401);
+  await request(app).post('/entries').set(as('alice')).set('Content-Type', 'application/json').send(huge).expect(201);
+});
+
+test('admin routes refuse everyone else', async () => {
+  await request(app).get('/admin/overview').expect(401);
+  await request(app).get('/admin/overview').set(as('mallory')).expect(403);
+  await request(app).get('/admin/users').set(as('mallory')).expect(403);
+});

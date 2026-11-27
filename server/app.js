@@ -26,7 +26,12 @@ function createApp({ auth, corsOrigins = [] }) {
   app.use('/auth', cors({ origin: ['app://arcjournal', 'file://', 'null', ...corsOrigins] }));
   app.use(cors({ origin: ['app://arcjournal', ...corsOrigins] }));
   app.use(rateLimit({ windowMs: 60 * 1000, limit: 300, standardHeaders: 'draft-7', legacyHeaders: false }));
-  app.use(express.json({ limit: '16mb' }));
+  // Sealed entries with attachments can be several megabytes; nothing else
+  // comes close. /entries parses its own large bodies, after the token is
+  // verified (routes/entries.js), so an anonymous request can never make the
+  // server buffer and parse megabytes of JSON.
+  const smallJson = express.json({ limit: '100kb' });
+  app.use((req, res, next) => (req.path.startsWith('/entries') ? next() : smallJson(req, res, next)));
 
   app.get('/health', (_req, res) => res.json({ status: 'ok', version }));
   app.get('/', (_req, res) => res.json({ name: 'ArcJournal API', version, status: 'running' }));

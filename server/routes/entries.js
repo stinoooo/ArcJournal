@@ -1,11 +1,14 @@
-const router = require('express').Router();
+const express = require('express');
+const router = express.Router();
 const Entry = require('../models/Entry');
 const LegacyBackup = require('../models/LegacyBackup');
 const auth = require('../middleware/auth');
 const { requireActive } = require('../middleware/auth');
 const { isDate, isFutureDate, isSealed, sealed, MAX_BODY, MAX_FILES } = require('../lib/validate');
 
-router.use(auth, requireActive);
+// The body is parsed only after the token checks out. Sealed entries carry
+// attachments, so the limit is large (see lib/validate.js for the per-field caps).
+router.use(auth, requireActive, express.json({ limit: '16mb' }));
 
 const ENC_VERSION = 1;
 const MAX_VERSIONS = 10;
